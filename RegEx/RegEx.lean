@@ -155,5 +155,6 @@ unsafe def recognizes? (r: RExp Char) (s: String) : Bool :=
 #eval recognizes? (τ 'a' ⋅ τ 'b') "ab" = true
 #eval recognizes? (τ 'a' ⋅ τ 'b') "abcdef" = false
 #eval recognizes? (τ 'a' ★) "" = true
-
+#eval recognizes? ((((τ 'x' ★) ⋅ (τ 'x' ★)) ★) ⋅ τ 'y') "xxxxy" = true
+#eval recognizes? ((((τ 'x' ★) ⋅ (τ 'x' ★)) ★) ⋅ τ 'y') "xxxxx" = false
 end regex
