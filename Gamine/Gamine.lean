@@ -27,26 +27,23 @@ def ConfigurationOutputSemantics {C A: Type*} (o: DeterministicSemantics C A) : 
 
 }
 
-class TerminationStep (C A: Type*) := (isDone: C → A → C → Bool)
-
-unsafe def runEx [ts: TerminationStep C A] (s: DeterministicSemantics C A) (c : C) : Option C :=
+unsafe def runEx (s: DeterministicSemantics C A) (c : C) : C :=
 Id.run do
   dbg_trace s!"C:{c}->A: {s.action c}"
   match (s.action c) with
-  | none => none
+  | none => c
   | some a => match s.execute a c with
-    | none => none
-    | some c₁ =>
-      if ts.isDone c a c₁ then none else runEx s c₁
+    | none => c
+    | some c₁ => runEx s c₁
 
 
-unsafe def run [TerminationStep C A] (s: DeterministicSemantics C A) : Option C :=
+unsafe def run (s: DeterministicSemantics C A) : Option C :=
   Id.run do
     let x := s.initial
     dbg_trace s!"iC: {x}"
     match x with
     | none => none
-    | some c => runEx s c
+    | some c => some (runEx s c)
 
 namespace composition
 
@@ -78,9 +75,14 @@ def ConfigurationBasedSynchronousComposition
     -- Id.run do
     -- dbg_trace s!"{l.initial} --> {r.action (l.initial) c₂}"
     match c₁ with
-    | none => match r.action (l.initial) c₂ with
-              | none => none
-              | some a₂ => some ⟨ init, a₂ ⟩
+    | none =>
+      let ini := l.initial
+      match ini with
+      | none => none
+      | some t₁ =>
+        match r.action t₁ c₂ with
+                | none => none
+                | some a₂ => some ⟨ init, a₂ ⟩
     | some c₁ =>
       match l.action c₁ with
       | none => none

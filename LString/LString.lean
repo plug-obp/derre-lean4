@@ -14,7 +14,5 @@ def inject (s: String): DeterministicSemantics Config Unit :=
   execute := λ _ c => Option.some ⟨ c.s, c.index + 1 ⟩ ,
 }
 
-instance : TerminationStep Config Unit where isDone := λ _ _ _ => false
-
 #eval (run (inject "moo"))
 #eval (run (inject ""))

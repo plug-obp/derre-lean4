@@ -92,9 +92,9 @@ def D₁ (x:T) (e: RExp T) : RExp T :=
   D x e
 
 
-def recognizes? (L : RExp T) : List T → Bool
+def recognizes (L : RExp T) : List T → Bool
 | [] => nullable? L
-| c::w => recognizes? (D c L) w
+| c::w => recognizes (D c L) w
 
 def name := τ "name" ⋅ τ "surname"
 
@@ -102,7 +102,7 @@ def address := τ "addr"
 
 def nameoraddress := name ⋃ address
 
-#reduce recognizes? nameoraddress ["name", "surname"]
+#reduce recognizes nameoraddress ["name", "surname"]
 
 -- #check (τ 'c')
 
@@ -142,18 +142,18 @@ instance : HasEval Char (Option Config) where eval := λ t c => match c with
   | none => false
   | some c => t = c.s.data[c.index]!
 
-def stringSem := (inject "ab")
-def re1 := (τ 'a' ⋅ τ 'b')
-def regExSem  := (Gamine.injectBrzozowski Char Config re1)
+unsafe def recognizes? (r: RExp Char) (s: String) : Bool :=
+  let stringSemantics := inject s
+  let rExpSemantics   := Gamine.injectBrzozowski Char Config r
+  let composition := stringSemantics ⨂ rExpSemantics
+  let final := run composition
+  match final with
+  | none => nullable? r
+  | some c => nullable? c.2.e
 
-
-def comp := stringSem ⨂ regExSem
-
-instance : TerminationStep
-  (Option Config × Gamine.REConfig Char)
-  (composition.ActionOrInit Unit × Gamine.derivativeT Char (Option Config))
-where isDone := λ _ _ _ => false
-
-#eval run comp
+#eval recognizes? (τ 'a' ⋅ τ 'b') "" = false
+#eval recognizes? (τ 'a' ⋅ τ 'b') "ab" = true
+#eval recognizes? (τ 'a' ⋅ τ 'b') "abcdef" = false
+#eval recognizes? (τ 'a' ★) "" = true
 
 end regex
