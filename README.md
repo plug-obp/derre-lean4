@@ -1,6 +1,6 @@
 # _Der_ivative _R_egular _E_xpressions (DerRE)
 
-A playground for regular expression derivatives in L∃∀N4.
+A L∃∀N4 playground for using [G∀min∃](https://teodorov.github.io/hdr) and regular expression derivatives.
 
 ## Brzozowski Derivatives
 
