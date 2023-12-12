@@ -1,0 +1,20 @@
+import «Gamine»
+
+structure Config :=
+  (s: String)
+  (index: Nat)
+
+instance : ToString Config where toString := λ c =>
+  s!"\"{c.s}\"[{c.index}]"
+
+def inject (s: String): DeterministicSemantics Config Unit :=
+{
+  initial := if (s.length = 0) then Option.none else Option.some ⟨ s, 0 ⟩,
+  action  := λ c => if (c.index + 1 < c.s.length) then Option.some Unit.unit else Option.none,
+  execute := λ _ c => Option.some ⟨ c.s, c.index + 1 ⟩ ,
+}
+
+instance : TerminationStep Config Unit where isDone := λ _ _ _ => false
+
+#eval (run (inject "moo"))
+#eval (run (inject ""))

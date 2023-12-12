@@ -1,0 +1,8 @@
+{"version": 6,
+ "packagesDir": "lake-packages",
+ "packages":
+ [{"path":
+   {"opts": {}, "name": "Gamine", "inherited": false, "dir": "./../Gamine"}},
+  {"path":
+   {"opts": {}, "name": "LString", "inherited": false, "dir": "./../LString"}}],
+ "name": "RegEx"}
