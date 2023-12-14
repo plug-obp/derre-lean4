@@ -1,13 +1,26 @@
 import «Gamine»
 import «RegEx»
 import «SoupL».expressions
+import «SoupL».expressions_semantics
 import «SoupL».pieces
+import «SoupL».pieces_semantics
 
 open soup.expressions.syntx
 open soup.expressions.semantics
 
 instance : regex.HasEval (Expression) (Environment)
   where eval := λ e ρ =>
+    let isDeadlock: Option Bool :=
+      (lookup "code" ρ).bind
+        (λ code =>
+          match code with
+          | .vcode code => some $ ((soup.semantics.SoupSemantics code).actions ρ).length = 0
+          | _ => none
+        )
+    let ρ :=
+      match isDeadlock with
+      | some isDeadlock => ("deadlock", .vb isDeadlock)::ρ
+      | none => ρ
     match evaluate e ρ with
     | some (.vb True) => True
     | _ => False
@@ -49,6 +62,24 @@ def exclusion:= (τ (notBothIn) ★) ⋅ (τ bothIn)
 
 -- a regular expression that forces full state-space exploration
 #eval check? ((τ [exp| true]★) ⋅ τ [exp| false]) (soup.semantics.SoupSemantics alicebob₀)
+
+
+def alicebob₁ := [soup|
+  my_soup
+  vars a=0 b=0 fA=false fB=false;
+
+  | a_i2w   ≜ [a=0      ]/ a←1; fA←true ;
+  | b_i2w   ≜ [b=0      ]/ b←1; fB←true ;
+  | a_w2c   ≜ [a=1 ∧ ¬fB]/ a←2 ;
+  | b_w2c   ≜ [b=1 ∧ ¬fA]/ b←2 ;
+  | a_c2i   ≜ [a=2      ]/ a←0; fA←false ;
+  | b_c2i   ≜ [b=2      ]/ b←0; fB←false ;
+]
+
+#eval check? exclusion (soup.semantics.SoupSemantics alicebob₁)
+
+--deadlock verification
+#eval check? ((τ [exp| true]★) ⋅ τ [exp| deadlock]) (soup.semantics.SoupSemantics alicebob₁)
 
 /-!
  some tests
