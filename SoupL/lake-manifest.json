@@ -1,13 +1,7 @@
 {"version": 6,
  "packagesDir": "lake-packages",
  "packages":
- [{"path":
-   {"opts": {}, "name": "Gamine", "inherited": false, "dir": "./Gamine"}},
-  {"path": {"opts": {}, "name": "RegEx", "inherited": false, "dir": "./RegEx"}},
-  {"path":
-   {"opts": {}, "name": "LString", "inherited": false, "dir": "./LString"}},
-  {"path": {"opts": {}, "name": "SoupL", "inherited": false, "dir": "./SoupL"}},
-  {"git":
+ [{"git":
    {"url": "https://github.com/leanprover-community/mathlib4",
     "subDir?": null,
     "rev": "f203f2e0caf1d9ea25b7f2e4b8c2afebd2c6967b",
@@ -15,6 +9,8 @@
     "name": "mathlib",
     "inputRev?": "v4.1.0",
     "inherited": false}},
+  {"path":
+   {"opts": {}, "name": "Gamine", "inherited": false, "dir": "./../Gamine"}},
   {"git":
    {"url": "https://github.com/mhuisi/lean4-cli.git",
     "subDir?": null,
@@ -55,4 +51,4 @@
     "name": "proofwidgets",
     "inputRev?": "v0.0.16",
     "inherited": true}}],
- "name": "Root"}
+ "name": "SoupL"}
