@@ -17,8 +17,6 @@ class InputSemantics (C A I: Type*) :=
   (actions: I → C → List A)
   (execute: A → I → C → List C)
 
-
-
 def AsynchronousComposition{C₁ A₁ C₂ A₂}
   (l: Semantics C₁ A₁)
   (r: Semantics C₂ A₂)
