@@ -58,6 +58,7 @@ def notBothIn := [exp| ¬((a = 2) ∧ (b = 2))]
 def bothIn :=    [exp|   (a = 2) ∧ (b = 2) ]
 def exclusion:= (τ (notBothIn) ★) ⋅ (τ bothIn)
 
+-- mutual exclusion doesn't pass on alicebob₀
 #eval check? exclusion (soup.semantics.SoupSemantics alicebob₀)
 
 -- a regular expression that forces full state-space exploration
@@ -75,10 +76,10 @@ def alicebob₁ := [soup|
   | a_c2i   ≜ [a=2      ]/ a←0; fA←false ;
   | b_c2i   ≜ [b=2      ]/ b←0; fB←false ;
 ]
-
+-- mutual exclusion passes on alicebob₁
 #eval check? exclusion (soup.semantics.SoupSemantics alicebob₁)
 
---deadlock verification
+--deadlock verification doesn't pass on alicebob₁
 #eval check? ((τ [exp| true]★) ⋅ τ [exp| deadlock]) (soup.semantics.SoupSemantics alicebob₁)
 
 /-!
