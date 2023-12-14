@@ -47,6 +47,8 @@ def exclusion:= (τ (notBothIn) ★) ⋅ (τ bothIn)
 
 #eval check? exclusion (soup.semantics.SoupSemantics alicebob₀)
 
+-- a regular expression that forces full state-space exploration
+#eval check? ((τ [exp| true]★) ⋅ τ [exp| false]) (soup.semantics.SoupSemantics alicebob₀)
 
 /-!
  some tests
