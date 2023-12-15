@@ -137,7 +137,7 @@ def derivativeT (T V: Type*) := (i : V) → (e : RExp T) → RExp T
 
 instance{T V: Type*}: ToString $ derivativeT T V where toString := λ _ => "derT"
 
-def injectBrzozowski (T V: Type*)[DecidableEq T][ToString T] (e: RExp T) [HasEval T (Option V)] :
+def BrzozowskiSemantics (T V: Type*)[DecidableEq T][ToString T] (e: RExp T) [HasEval T (Option V)] :
   DeterministicInputSemantics (REConfig T) (derivativeT T (Option V)) V:=
 {
   initial := Option.some ⟨ e ⟩
@@ -145,7 +145,7 @@ def injectBrzozowski (T V: Type*)[DecidableEq T][ToString T] (e: RExp T) [HasEva
   execute := λ d i c => Option.some ⟨ d i c.e ⟩
 }
 
-def injectBrzozowski₀ (T V: Type*) (e: RExp T) [HasEval T V] :
+def BrzozowskiSemantics₀ (T V: Type*) (e: RExp T) [HasEval T V] :
   DeterministicInputSemantics₀ (REConfig T) (derivativeT T V) V:=
 {
   initial := Option.some ⟨ e ⟩
@@ -153,7 +153,7 @@ def injectBrzozowski₀ (T V: Type*) (e: RExp T) [HasEval T V] :
   execute := λ d i c => Option.some ⟨ d i c.e ⟩
 }
 
-def injectBrzozowski₁ (T V: Type*) [DecidableEq T] (e: RExp T) [HasEval T V] :
+def BrzozowskiSemantics₁ (T V: Type*) [DecidableEq T] (e: RExp T) [HasEval T V] :
   DeterministicInputSemantics₀ (REConfig T) (derivativeT T V) V:=
 {
   initial := Option.some ⟨ e ⟩
@@ -170,8 +170,8 @@ instance : HasEval Char (Option Config) where eval := λ t c => match c with
   | some c => t = c.s.data[c.index]!
 
 unsafe def recognizes? (r: RExp Char) (s: String) : Bool :=
-  let stringSemantics := inject s
-  let rExpSemantics   := Gamine.injectBrzozowski Char Config r
+  let stringSemantics := LStringSemantics s
+  let rExpSemantics   := Gamine.BrzozowskiSemantics Char Config r
   let composition := stringSemantics ⨂ rExpSemantics
   let final := run composition
   match final with

@@ -34,7 +34,7 @@ unsafe def check?
   [regex.HasEval T C]
   (r: regex.RExp T)
   (s: Semantics C A) :=
-  let rExpSemantics  := regex.Gamine.injectBrzozowski₁ T C r
+  let rExpSemantics  := regex.Gamine.BrzozowskiSemantics₁ T C r
   let inputSemantics := DeterministicInput2InputSemantics rExpSemantics
   let composition    := SynchronousComposition s inputSemantics
   let accepting      := AcceptingSemantics composition
