@@ -162,7 +162,7 @@ def AcceptingSemantics{C A: Type*}
     (o.execute a c).map λ c => (accepting c, c)
 }
 
-def BFSTraversal{C A: Type*}
+def BFSSearchSemantics{C A: Type*}
 [ToString C] [ToString A]
 [BEq C][Inhabited C]
 (o: Semantics C A)
@@ -185,18 +185,17 @@ def BFSTraversal{C A: Type*}
     | .next =>
       if c.atStart
         then
-          let news := o.initial
-          some ⟨false, news.find? stopCondition,c.frontier ++ news, c.known ++ news⟩
+          let neighbors := o.initial
+          some ⟨false, neighbors.find? stopCondition,c.frontier ++ neighbors, c.known ++ neighbors⟩
         else
           let s := c.frontier.head!
-
-          let as := o.actions s
+          let actions := o.actions s
           -- dbg_trace s!"-->As{as}"
-          let news := as.bind λ a => o.execute a s
+          let neighbors := actions.bind λ a => o.execute a s
           -- dbg_trace s!"-->source:{s} \n targets:{news}"
-          let news := news.filter (λ conf => ¬ c.known.contains conf)
+          let newNeighbors := neighbors.filter (λ conf => ¬ c.known.contains conf)
           -- dbg_trace s!"-->F{c.frontier}"
-          some ⟨false, news.find? stopCondition, c.frontier.tail! ++ news, c.known ++ news⟩
+          some ⟨false, newNeighbors.find? stopCondition, c.frontier.tail! ++ newNeighbors, c.known ++ newNeighbors⟩
     | .witness =>
       dbg_trace s!"TODO: Compute counter-example"
       some ⟨ true, c.found, c.frontier, c.known ⟩
