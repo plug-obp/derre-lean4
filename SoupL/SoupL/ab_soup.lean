@@ -17,7 +17,8 @@ instance : HasEval (Expression) (Environment)
       (lookup "code" ρ).bind
         (λ code =>
           match code with
-          | .vcode code => some $ ((soup.semantics.SoupSemantics code).actions ρ).length = 0
+          | .vcode code =>
+            some $ ((soup.semantics.SoupSemantics code).actions ρ).length = 0
           | _ => none
         )
     let ρ :=
@@ -49,7 +50,7 @@ unsafe def check?
   | none => True
 
 def alicebob₀ := [soup|
-  my_soup
+  alicebob₀
   vars a=0 b=0;
 
   | a_i2w   ≜ [a=0]/a←1 ;
@@ -72,7 +73,7 @@ def exclusion:= (τ (notBothIn) ★) ⋅ (τ bothIn)
 
 
 def alicebob₁ := [soup|
-  my_soup
+  alicebob₁
   vars a=0 b=0 fA=false fB=false;
 
   | a_i2w   ≜ [a=0      ]/ a←1; fA←true ;
@@ -88,9 +89,38 @@ def alicebob₁ := [soup|
 --deadlock verification doesn't pass on alicebob₁
 #eval False = check? ((τ [exp| true]★) ⋅ τ [exp| deadlock]) (soup.semantics.SoupSemantics alicebob₁)
 
+def alicebob₂ := [soup|
+  alicebob₂
+  vars a=0 b=0 fA=false fB=false;
+
+  | a_i2w   ≜ [a=0      ]/ a←1; fA←true ;
+  | b_i2w   ≜ [b=0      ]/ b←1; fB←true ;
+  | a_w2c   ≜ [a=1 ∧ ¬fB]/ a←2 ;
+  | b_w2c   ≜ [b=1 ∧ ¬fA]/ b←2 ;
+  | b_w2i   ≜ [(b=1)∧ fA]/ b←0; fB←false ;
+  | a_c2i   ≜ [a=2      ]/ a←0; fA←false ;
+  | b_c2i   ≜ [b=2      ]/ b←0; fB←false ;
+]
+-- mutual exclusion passes on alicebob₁
+#eval True = check? exclusion (soup.semantics.SoupSemantics alicebob₂)
+
+--deadlock verification doesn't pass on alicebob₁
+#eval True = check? ((τ [exp| true]★) ⋅ τ [exp| deadlock]) (soup.semantics.SoupSemantics alicebob₂)
+
+
 /-!
  some tests
 -/
+
+open Value
+def e := [("a", vn 1), ("b", vn 1), ("fA", vb True), ("fB", vb True)]
+def s₂ := soup.semantics.SoupSemantics alicebob₂
+
+def ex := [exp|  (b=1) ∧ fA]
+
+#eval evaluate ex e
+
+#eval s₂.actions e
 
 def ss := soup.semantics.SoupSemantics alicebob₀
 #eval ss.initial

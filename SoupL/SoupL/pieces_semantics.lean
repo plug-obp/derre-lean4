@@ -1,4 +1,3 @@
-
 import Lean
 import «SoupL».expressions
 import «SoupL».expressions_semantics

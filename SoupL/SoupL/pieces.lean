@@ -28,6 +28,8 @@ structure Piece :=
   (effect: Statement)
 deriving Inhabited, DecidableEq, Repr
 
+instance: ToString Piece where toString := λ piece => s!"{piece.name}"
+
 structure Soup :=
   (name: String)
   (vars: List (String × Expression))

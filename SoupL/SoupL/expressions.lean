@@ -153,10 +153,13 @@ partial def elab_expression: Syntax → MetaM Expr
 elab "[exp|" e:expression "]": term => elab_expression e
 
 #reduce [exp| 2 + 23]
-#reduce  [exp|a + 4]
-#reduce  [exp|a ≤ 4]
-#reduce  [exp|1 + true]
-#reduce  [exp|1 + !true]
+#reduce [exp|a + 4]
+#reduce [exp|a ≤ 4]
+#reduce [exp|1 + true]
+#reduce [exp|1 + !true]
+-- we don't have priority, so right associative by default
+#reduce [exp| b=1 ∧ fA] != [exp| (b=1) ∧ fA]
+#eval [exp| b=1 ∧ fA] != [exp| (b=1) ∧ fA]
 
 end embedding
 end syntx
