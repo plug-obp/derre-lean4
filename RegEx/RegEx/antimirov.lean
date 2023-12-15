@@ -7,3 +7,7 @@ https://doi.org/10.1016/0304-3975(95)00182-4.
 Antimirov partial derivatives give a non-deterministic interpretation of regular expressions.
 The Antimirov construction is an NFA-like symbolic interpretation of regular expressions.
 -/
+
+namespace regex.semantics.antimirov
+
+end regex.semantics.antimirov

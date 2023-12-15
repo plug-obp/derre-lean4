@@ -1,7 +1,6 @@
 import Mathlib.Tactic.Basic
 import Lean
-namespace regex
-namespace syntx
+namespace regex.syntx
 variable {T: Type*} [DecidableEq T] [Repr T] [ToString T]
 
 inductive RExp T :=
@@ -136,5 +135,4 @@ def t4:= [regex:Nat| (τ 2) | ε ∪ ∅ ∘ (τ 34)]
 
 end embedding
 
-end syntx
-end regex
+end regex.syntx

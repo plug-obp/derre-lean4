@@ -9,9 +9,7 @@ Brzozowski derivatives give a deterministic interpretation of regular expression
 The Brzozowski construction is a DFA-like symbolic interpretation of regular expressions.
 -/
 
-namespace regex
-namespace semantics
-namespace brzozowski
+namespace regex.semantics.brzozowski
 
 variable {T: Type u} [DecidableEq T] [Repr T] [ToString T]
 open regex.syntx
@@ -124,7 +122,4 @@ def BrzozowskiSemantics₁ (T V: Type*) [DecidableEq T] (e: RExp T) [HasEval T V
 }
 
 end gamine
-
-end brzozowski
-end semantics
-end regex
+end regex.semantics.brzozowski
