@@ -46,8 +46,8 @@ def D {T α:Type*}[DecidableEq T][h: HasEval T α] (i: α) : RExp T → RExp T
 | ε         => Φ
 | τ c       => if (h.eval c i) then ε else Φ
 | (e₁ ⋃ e₂) => (D i e₁) ⋃ₛ (D i e₂)
-| (e₁ ⋅ e₂) => ((δ e₁) ⋅ₛ D i e₂) ⋃ₛ ( D i e₁ ⋅ₛ e₂)
-| (e ★)     => (D i e) ⋅ₛ (e ★ₛ)
+| (e₁ ⋅ e₂) => ((δ e₁) ∘ₛ D i e₂) ⋃ₛ ( D i e₁ ∘ₛ e₂)
+| (e ★)     => (D i e) ∘ₛ (e ★ₛ)
 
 def D₀ {T α:Type*}[h: HasEval T α] (i: α) : RExp T → RExp T
 | Φ         => Φ

@@ -158,7 +158,7 @@ elab "[exp|" e:expression "]": term => elab_expression e
 #reduce [exp|1 + true]
 #reduce [exp|1 + !true]
 -- we don't have priority, so right associative by default
-#reduce [exp| b=1 ∧ fA] != [exp| (b=1) ∧ fA]
+#reduce [exp| b=1 ∧ fA] = [exp| (b=1) ∧ fA]
 #eval [exp| b=1 ∧ fA] != [exp| (b=1) ∧ fA]
 
 end embedding

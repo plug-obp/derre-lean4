@@ -63,10 +63,11 @@ def alicebob₀ := [soup|
 
 def notBothIn := [exp| ¬((a = 2) ∧ (b = 2))]
 def bothIn :=    [exp|   (a = 2) ∧ (b = 2) ]
-def exclusion:= (τ (notBothIn) ★) ⋅ (τ bothIn)
+def exclusion:= (τ (notBothIn) ★) ⋅ (τ bothIn) -- simple embedding, might with other syntax
+def exclusion₁ := [regex: Expression | (τ notBothIn) * ∘ τ bothIn] -- isolated embedding
 
 -- mutual exclusion doesn't pass on alicebob₀
-#eval False =  check? exclusion (soup.semantics.SoupSemantics alicebob₀)
+#eval False =  check? exclusion₁ (soup.semantics.SoupSemantics alicebob₀)
 
 -- a regular expression that forces full state-space exploration
 #eval True = check? ((τ [exp| true]★) ⋅ τ [exp| false]) (soup.semantics.SoupSemantics alicebob₀)
