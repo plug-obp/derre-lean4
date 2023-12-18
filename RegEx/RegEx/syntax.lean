@@ -48,7 +48,7 @@ def toString : RExp T → String
   | ε  => "ε"
   | τ t => s!"τ({t})"
   | e₁ ⋃ e₂ => s!"{toString e₁} ⋃ {toString e₂}"
-  | e₁ ⋅ e₂ => s!"{toString e₁} ∘  {toString e₂}"
+  | e₁ ⋅ e₂ => s!"{toString e₁} ∘ {toString e₂}"
   | e ★ => s!"{toString e}*"
 
 instance : ToString (RExp T) where toString := toString
