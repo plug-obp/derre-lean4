@@ -59,6 +59,4 @@ unsafe def main (args : List String) : IO Unit := do
   let fileName := args.head!
   let s : Soup ← timeit "time to read the soup:" $ readSoupFromFileName fileName
   let re: RExp Expression ← timeit "time to read the regex:" $ readRExpFromFileName (args.get! 1)
-  IO.println s!"Hello, {s.name} vars {s.vars}"
-  IO.println s!"RExp = {re}"
   timeit "time to check: " $ check s re

@@ -221,6 +221,16 @@ unsafe def run (s: DeterministicSemantics C A) : Option C :=
     | some c => some (runEx s c)
 
 
+unsafe
+def runEx₁ (s: DeterministicSemantics C A) (c : C) : Option C := do
+  dbg_trace s!"C:{c}->A: {s.action c}"
+  let a := (s.action c)
+  let c₁ ← a.bind λ a => (s.execute a c)
+  runEx₁ s c₁
+
+unsafe def run₁ (s: DeterministicSemantics C A) : Option C := do
+  let c₀ ← s.initial
+  runEx₁ s c₀
 
 
 namespace composition
