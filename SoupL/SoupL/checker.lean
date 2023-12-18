@@ -51,7 +51,7 @@ unsafe def regex_check?
   (r: RExp T)
   (s: Semantics C A) : Bool :=
   let deterministic := regex_check_bridge r s
-  let endConfiguration := run₁ deterministic
+  let endConfiguration := run deterministic
   match (endConfiguration.bind λ c => c.found) with
   | some _ => False
   | none => True

@@ -202,35 +202,16 @@ def BFSSearchSemantics{C A: Type*}
 }
 
 
-unsafe def runEx (s: DeterministicSemantics C A) (c : C) : C :=
-Id.run do
-  dbg_trace s!"C:{c}->A: {s.action c}"
-  match (s.action c) with
-  | none => c
-  | some a => match s.execute a c with
-    | none => c
-    | some c₁ => runEx s c₁
-
-
-unsafe def run (s: DeterministicSemantics C A) : Option C :=
-  Id.run do
-    let x := s.initial
-    dbg_trace s!"iC: {x}"
-    match x with
-    | none => none
-    | some c => some (runEx s c)
-
-
 unsafe
-def runEx₁ (s: DeterministicSemantics C A) (c : C) : Option C := do
+def runEx (s: DeterministicSemantics C A) (c : C) : Option C := do
   dbg_trace s!"C:{c}->A: {s.action c}"
   let a := (s.action c)
   let c₁ ← a.bind λ a => (s.execute a c)
-  runEx₁ s c₁
+  runEx s c₁
 
-unsafe def run₁ (s: DeterministicSemantics C A) : Option C := do
+unsafe def run (s: DeterministicSemantics C A) : Option C := do
   let c₀ ← s.initial
-  runEx₁ s c₀
+  runEx s c₀
 
 
 namespace composition
