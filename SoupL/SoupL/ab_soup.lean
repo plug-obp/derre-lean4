@@ -1,53 +1,12 @@
-import «Gamine»
+import «SoupL».checker
 import «RegEx»
-import «SoupL».expressions
 import «SoupL».expressions_semantics
-import «SoupL».pieces
-import «SoupL».pieces_semantics
 
 open soup.expressions.syntx
 open soup.expressions.semantics
-open regex.syntx
 open regex.semantics.brzozowski
-open regex.semantics.brzozowski.gamine
 
-instance : HasEval (Expression) (Environment)
-  where eval := λ e ρ =>
-    let isDeadlock: Option Bool :=
-      (lookup "code" ρ).bind
-        (λ code =>
-          match code with
-          | .vcode code =>
-            some $ ((soup.semantics.SoupSemantics code).actions ρ).length = 0
-          | _ => none
-        )
-    let ρ :=
-      match isDeadlock with
-      | some isDeadlock => ("deadlock", .vb isDeadlock)::ρ
-      | none => ρ
-    match evaluate e ρ with
-    | some (.vb True) => True
-    | _ => False
-
-instance: ToString (ActionOrInit A × derivativeT T C) where toString := λ _ => "action"
-
-unsafe def check?
-  [ToString C]
-  [ToString T]
-  [DecidableEq T] [DecidableEq C] [Inhabited T] [Inhabited C]
-  [HasEval T C]
-  (r: RExp T)
-  (s: Semantics C A) : Bool :=
-  let rExpSemantics  := BrzozowskiSemantics₁ T C r
-  let inputSemantics := DeterministicInput2InputSemantics rExpSemantics
-  let composition    := SynchronousComposition s inputSemantics
-  let accepting      := AcceptingSemantics composition
-                            λ (_, c₂) => nullable? c₂.e
-  let deterministic  := BFSSearchSemantics accepting λ (atEnd, _) => atEnd
-  let endConfiguration := run deterministic
-  match (endConfiguration.bind λ c => c.found) with
-  | some _ => False
-  | none => True
+unsafe def check? := soup_regex_check?
 
 def alicebob₀ := [soup|
   alicebob₀
@@ -67,11 +26,10 @@ def exclusion:= (τ (notBothIn) ★) ⋅ (τ bothIn) -- simple embedding, might 
 def exclusion₁ := [regex: Expression | (τ notBothIn) * ∘ τ bothIn] -- isolated embedding
 
 -- mutual exclusion doesn't pass on alicebob₀
-#eval False =  check? exclusion₁ (soup.semantics.SoupSemantics alicebob₀)
+#eval False =  check? exclusion₁ alicebob₀
 
 -- a regular expression that forces full state-space exploration
-#eval True = check? ((τ [exp| true]★) ⋅ τ [exp| false]) (soup.semantics.SoupSemantics alicebob₀)
-
+#eval True = check? ((τ [exp| true]★) ⋅ τ [exp| false]) alicebob₀
 
 def alicebob₁ := [soup|
   alicebob₁
@@ -85,10 +43,10 @@ def alicebob₁ := [soup|
   | b_c2i   ≜ [b=2      ]/ b←0; fB←false ;
 ]
 -- mutual exclusion passes on alicebob₁
-#eval True = check? exclusion (soup.semantics.SoupSemantics alicebob₁)
+#eval True = check? exclusion alicebob₁
 
 --deadlock verification doesn't pass on alicebob₁
-#eval False = check? ((τ [exp| true]★) ⋅ τ [exp| deadlock]) (soup.semantics.SoupSemantics alicebob₁)
+#eval False = check? ((τ [exp| true]★) ⋅ τ [exp| deadlock]) alicebob₁
 
 def alicebob₂ := [soup|
   alicebob₂
@@ -103,10 +61,10 @@ def alicebob₂ := [soup|
   | b_c2i   ≜ [b=2      ]/ b←0; fB←false ;
 ]
 -- mutual exclusion passes on alicebob₁
-#eval True = check? exclusion (soup.semantics.SoupSemantics alicebob₂)
+#eval True = check? exclusion alicebob₂
 
 --deadlock verification doesn't pass on alicebob₁
-#eval True = check? ((τ [exp| true]★) ⋅ τ [exp| deadlock]) (soup.semantics.SoupSemantics alicebob₂)
+#eval True = check? ((τ [exp| true]★) ⋅ τ [exp| deadlock]) alicebob₂
 
 
 /-!

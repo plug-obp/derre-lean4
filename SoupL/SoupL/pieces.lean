@@ -184,29 +184,7 @@ def xx := [soup|
   |
 ]
 
-def readExprFromFileName(fileName: String): TermElabM (Expr×Expr) := do
-  let code ← IO.FS.readFile ⟨ fileName ⟩
-  initSearchPath (← Lean.findSysroot) ["build/lib"]
-  let env ← importModules #[ `ActionLanguageL4 ] {}
-  let estx := Lean.Parser.runParserCategory env `term code
-  match estx with
-    | Except.ok stx =>
-      let ty := Expr.const ``Soup []
-      let expr ← Term.elabTerm stx (some ty)
-      return (expr, ty)
-    | Except.error e => throwError f!"parse error: {e}"
 
-open Elab Tactic
-
-syntax "soupFromFileName" str : tactic
-elab_rules : tactic
-| `(tactic| soupFromFileName $i:str) => withMainContext do
-  let et ← readExprFromFileName i.getString
-  closeMainGoal et.1
-
-
--- def xz : Soup := by {soupFromFileName "soup0.soup"}
--- #reduce xz
 
 end embedding
 
