@@ -3,6 +3,8 @@ import Mathlib.Tactic.Basic
 
 variable {C A : Type*} [ToString C] [ToString A]
 
+class HasEval (α β: Type*) := (eval: α → β → Bool)
+
 /-
 I use list for now because I want to get an implementation quickly.
 We should use sets, however if the semantics is good enough there should not be many duplicates
@@ -66,10 +68,41 @@ def SynchronousComposition{C₁ A₁ C₂ A₂}
     | _, _ => []
 }
 
+def TracingSemantics{C A: Type*}
+  [ToString C] [ToString A]
+  (o: Semantics C A) : Semantics C A:= {
+  initial :=
+    let cs := o.initial
+    dbg_trace s!"T: initials= {cs}"
+    cs
+  actions := λ c =>
+    let as := o.actions c
+    dbg_trace s!"T: actions= {as}"
+    as
+  execute := λ a c =>
+    let ts := o.execute a c
+    dbg_trace s!"T: targets= {ts}"
+    ts
+
+}
+
 class DeterministicSemantics (C A: Type*) :=
   (initial: Option C)
   (action: C → Option A)
   (execute: A → C → Option C)
+
+def DeterministicSemantics2Semantics{C A: Type*} (o: DeterministicSemantics C A): Semantics C A :=
+{
+  initial := match o.initial with
+    | none => []
+    | some c => [c]
+  actions := λ c => match o.action c with
+    | none => []
+    | some a => [a]
+  execute := λ a c => match o.execute a c with
+    | none => []
+    | some t => [t]
+}
 
 class DeterministicInputSemantics (C A I: Type*) :=
   (initial: Option C)
@@ -239,8 +272,7 @@ def ConfigurationBasedSynchronousComposition
     | none => none
     | some c₂ => some ⟨ none, c₂ ⟩
   action := λ ⟨ c₁, c₂ ⟩ =>
-    -- Id.run do
-    -- dbg_trace s!"{l.initial} --> {r.action (l.initial) c₂}"
+    dbg_trace s!"ini--> {l.initial} --> {r.action (l.initial) c₂}"
     match c₁ with
     | none =>
       let ini := l.initial
@@ -255,6 +287,7 @@ def ConfigurationBasedSynchronousComposition
       | none => none
       | some a₁ =>
         let t₁ := l.execute a₁ c₁
+        dbg_trace s!"step --> {t₁} --> {r.action t₁ c₂}"
         match r.action t₁ c₂ with
         | none => none
         | some a₂ => some ⟨ action a₁, a₂ ⟩

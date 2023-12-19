@@ -3,9 +3,17 @@ import «Gamine»
 structure Config :=
   (s: String)
   (index: Nat)
+deriving DecidableEq, Inhabited
 
 instance : ToString Config where toString := λ c =>
   s!"\"{c.s}\"[{c.index}]"
+
+instance : HasEval Char (Option Config) where eval := λ t c => match c with
+  | none => false
+  | some c => t = c.s.data[c.index]!
+
+instance : HasEval Char Config where eval := λ t c =>
+  t = c.s.data[c.index]!
 
 def LStringSemantics (s: String): DeterministicSemantics Config Unit :=
 {
