@@ -33,9 +33,6 @@ def inhabited? : RExp T → Bool
 | (e₁ ⋅ e₂) => inhabited? e₁ ∧ inhabited? e₂
 | _ ★ => true
 
-universe v w t
-class HasEval (α β: Type*) := (eval: α → β → Bool)
-
 /--
   **Brzozowski** derivative
 -/
