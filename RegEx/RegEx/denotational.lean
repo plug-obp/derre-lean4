@@ -140,7 +140,7 @@ def δ: Regex 𝒜 → Regex 𝒜
 
 lemma δ₁: ∀ w: Word 𝒜, w ∈ L (δ r) → w = [] := by {
   induction r with
-  | empty | token c =>
+  | empty | token _ =>
     simp [δ, L]
     intros w H
     contradiction
@@ -178,12 +178,136 @@ lemma δ₁: ∀ w: Word 𝒜, w ∈ L (δ r) → w = [] := by {
     | inr h =>
       apply ih₂
       exact h
-  | star e ih =>
+  | star e _ =>
     simp [δ]
     intros w h
     rw [←words_in_L_ε]
     exact h
 }
-lemma δ₂: [] ∈ L (δ r) → (L r = Lε) := by { sorry }
-lemma δε: w ∈ L (δ r) → w = [] ∧ (L r = Lε) := by { sorry }
-lemma δ_holds: [] ∈ L r → [] ∈ L (δ r) := by { sorry }
+lemma δ₂: [] ∈ @L 𝒜 (δ r) → [] ∈ (L r) := by {
+  induction r with
+  | empty =>
+    simp [L]
+  | token _ =>
+    simp [L]
+    intro h
+    exfalso
+    contradiction
+  | concatenation e₁ e₂ ihe₁ ihe₂ =>
+    intro H
+    simp [L] at *
+    cases H with
+    | intro x Hx =>
+      cases Hx with
+      | intro y Hy =>
+        cases Hy with
+        | intro z Hz =>
+          exists []
+          constructor
+          . apply ihe₁
+            have hx : x = [] := by {
+              apply δ₁
+              exact y
+            }
+            rw [←hx]
+            exact y
+          . exists []
+            constructor
+            . apply ihe₂
+              have hz : z = [] := by {
+                apply δ₁
+                exact Hz.left
+              }
+              rw [←hz]
+              exact Hz.left
+            . rfl
+  | union e₁ e₂ ihe₁ ihe₂ =>
+    intro H
+    simp [L] at *
+    cases H with
+    | inl hl =>
+      apply Or.inl
+      apply ihe₁
+      exact hl
+    | inr hr =>
+      apply Or.inr
+      apply ihe₂
+      exact hr
+  | star e _ =>
+    intro _
+    apply star.star_empty
+ }
+lemma δε: w ∈ L (δ r) → w = [] ∧ [] ∈ (L r) := by {
+  intro H
+  constructor
+  . apply δ₁
+    exact H
+  . apply δ₂
+    have hw : w = [] := by {
+      apply δ₁
+      exact H
+    }
+    rw [←hw]
+    exact H
+}
+
+lemma he1 : ∀ x z : Word 𝒜, [] = x ++ z → x = [] ∧ z = [] := by {
+  intros x y
+  cases x with
+  | nil => tauto
+  | cons h t =>
+    tauto
+}
+
+lemma δ_holds: [] ∈ L r → [] ∈ L (δ r) := by {
+  induction r with
+  | empty => simp [L]
+  | token c =>
+    simp [L]
+    intro H
+    exfalso
+    contradiction
+  | concatenation e₁ e₂ ihe₁ ihe₂ =>
+    intro H
+    simp [L] at *
+    cases H with
+    | intro x Hx =>
+      cases Hx with
+      | intro y Hy =>
+        cases Hy with
+        | intro z Hz =>
+          have hx : x = [] ∧ z = [] := by {
+            cases Hz with
+            | intro lh rh =>
+              apply he1
+              exact rh
+          }
+          exists []
+          constructor
+          . apply ihe₁
+            rw [hx.left] at y
+            exact y
+          . exists []
+            constructor
+            . apply ihe₂
+              cases Hz with
+              | intro hl hr =>
+                rw [hx.right] at hl
+                exact hl
+            . rfl
+  | union e₁ e₂ ihe₁ ihe₂ =>
+    intro H
+    simp [δ, L] at *
+    cases H with
+    | inl hl =>
+      apply Or.inl
+      apply ihe₁
+      exact hl
+    | inr hr =>
+      apply Or.inr
+      apply ihe₂
+      exact hr
+  | star e ihe =>
+    intro H
+    apply star.star_empty
+}
