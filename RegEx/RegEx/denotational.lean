@@ -32,7 +32,7 @@ variable
 -/
 alias Word := List
 instance: HAppend (Word 𝒜) (Word 𝒜) (Word 𝒜) := ⟨ List.append ⟩
-instance: EmptyCollection (Word 𝒜) := ⟨ [] ⟩
+-- instance: EmptyCollection (Word 𝒜) := ⟨ [] ⟩
 
 -- set_option quotPrecheck false
 -- notation "ε"     => ([]:Word 𝒜)
@@ -46,6 +46,8 @@ def Language 𝒜 := Set $ Word 𝒜
 instance: Membership (Word 𝒜) (Language 𝒜) := ⟨Set.Mem⟩
 instance: EmptyCollection (Language 𝒜) := ⟨ λ _ => False ⟩
 instance: Union (Language 𝒜) := ⟨Set.union⟩
+def singleLetter (w: 𝒜) : Language 𝒜 := {b | b = [w]}
+instance: Singleton 𝒜 (Language 𝒜) := ⟨singleLetter⟩
 
 inductive Regex 𝒜 :=
 | empty
@@ -68,31 +70,120 @@ postfix:65   "★"    => Regex.star
 -- ε is a derived regex that matches only the empty string
 def ε: Regex 𝒜 := .star .empty
 
--- Denotational definition of star
+/-!
+  # Denotational definition of star
+  We need this inductive definition to side-step the termination checker
+  for the denotational semantics.
+  The language of ★ is defined as:
+  `L e★ = {[]} ∪ L (e · e★)`
+  but this does not work as a recursive definition because `L e★` needs `L e★`
+  which diverges, which is normal since a regular expression
+  can represent languages with infinitely many words
+-/
 inductive star (l: Language 𝒜) : Language 𝒜
-| star_empty: star l ∅
-| star_iter:
+| star_empty: star l []
+| star_iter: ∀ w₁ w₂,
       (w₁ ∈ l) → star l w₂
       →------------------
       star l (w₁ ++ w₂)
 
-def Leps : Language 𝒜 := { w: Word 𝒜 | w=[] }
-
--- The denotational semantics of a regex is a language
+/-!
+  # The denotational semantics of a regex is a language
+-/
 def L: Regex 𝒜 → Language 𝒜
 | Φ       => ∅
-| τ c     => { w | w = c::[] }
-| e₁ ⋅ e₂ => { w | ∃ w₁ w₂, w = w₁ ++ w₂ ∧ L e₁ w₁ ∧ L e₂ w₂ }
+| τ c     => { c }
+| e₁ ⋅ e₂ => { w | ∃ w₁ w₂, w₁ ∈ L e₁ ∧ w₂ ∈ L e₂ ∧ w = w₁ ++ w₂}
 | e₁ ⋃ e₂ => L e₁ ∪ L e₂
-| e★      => { w | w = [] } ∪ L e
+| e★      => { w | w ∈ star (L e) }
 
-lemma star_empty: L (∅★) = { w: Word 𝒜 | w=[] } := by {
-  simp [L]
-  have h: ∀ t, ∀ x: Set t,  x ∪ ∅ = x := by {sorry}
-  apply h
+lemma star_emptyL: star ∅ w → w = [] := by {
+  intro H
+  cases H with
+  | star_empty => rfl
+  | star_iter w₁ w₂ w₁_in_empty _ =>
+    exfalso
+    apply w₁_in_empty
 }
 
--- Eps indeed represents the language consisting only of the empty string. *)
-lemma eps_denotation : L ε w ↔ w = ([]:Word 𝒜) := by {
-  sorry
+
+-- ε represents the language consisting only of the empty word.
+lemma words_in_L_ε (w: Word 𝒜): w ∈ L ε ↔ w = [] := by {
+  constructor
+  . apply star_emptyL
+  . intro wH
+    rw [wH]
+    simp [L]
+    apply star.star_empty
 }
+
+def Lε  := { w:Word 𝒜 | w = [] }
+
+-- The language of ε is the singleton set { [] }
+--  L ε = { [] }
+lemma eps_denotation: @L 𝒜 ε = Lε := by {
+  apply funext
+  intro w
+  apply propext
+  apply words_in_L_ε
+}
+
+/-!
+  Nullable
+-/
+def δ: Regex 𝒜 → Regex 𝒜
+| Φ       => Φ
+| τ _     => Φ
+| e₁ ⋅ e₂ => δ e₁ ⋅ δ e₂
+| e₁ ⋃ e₂ => δ e₁ ⋃ δ e₂
+| _★      => ε
+
+lemma δ₁: ∀ w: Word 𝒜, w ∈ L (δ r) → w = [] := by {
+  induction r with
+  | empty | token c =>
+    simp [δ, L]
+    intros w H
+    contradiction
+  | concatenation e₁ e₂ ih₁ ih₂ =>
+    intro w
+    intro concatenation
+    cases w with
+    | nil => rfl
+    | cons w₁ w₂ =>
+      cases concatenation with
+      | intro xx Hxx =>
+        cases Hxx with
+        | intro yy Hyy =>
+          cases Hyy with
+          | intro zz Hzz =>
+            cases Hzz with
+            | intro tt Htt =>
+            rw [Htt]
+            specialize ih₁ xx
+            specialize ih₂ yy
+            simp [*] at *
+            rw [ih₁]
+            rw [ih₂]
+            rfl
+  | union e₁ e₂ ih₁ ih₂ =>
+    intro w
+    simp [δ, L]
+    specialize ih₁ w
+    specialize ih₂ w
+    intro union
+    cases union with
+    | inl h =>
+      apply ih₁
+      exact h
+    | inr h =>
+      apply ih₂
+      exact h
+  | star e ih =>
+    simp [δ]
+    intros w h
+    rw [←words_in_L_ε]
+    exact h
+}
+lemma δ₂: [] ∈ L (δ r) → (L r = Lε) := by { sorry }
+lemma δε: w ∈ L (δ r) → w = [] ∧ (L r = Lε) := by { sorry }
+lemma δ_holds: [] ∈ L r → [] ∈ L (δ r) := by { sorry }
