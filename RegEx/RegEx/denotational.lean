@@ -307,7 +307,7 @@ lemma δ_holds: [] ∈ L r → [] ∈ L (δ r) := by {
       apply Or.inr
       apply ihe₂
       exact hr
-  | star e ihe =>
-    intro H
+  | star e _ =>
+    intro _
     apply star.star_empty
 }
