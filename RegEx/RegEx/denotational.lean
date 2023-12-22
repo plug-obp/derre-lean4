@@ -6,15 +6,14 @@ import Mathlib.Tactic.LibrarySearch
 
 /-!
 # Inspired by
-https://github.com/tchajed/regex-derivative/blob/master/regex.v
 
-
+- [Regular-expression derivatives reexamined](https://www.khoury.northeastern.edu/home/turon/re-deriv.pdf)
+- [regex-derivative @ Tej Chajed](https://github.com/tchajed/regex-derivative/blob/master/regex.v)
 -/
 
 -- The 𝒜lphabet
 variable
   { 𝒜 : Type* } -- 𝒜 because we cannot use Σ
-  --[DecidableEq E] TODO: see if we require it
 
 /-!
   # Standard names
@@ -32,10 +31,6 @@ variable
 -/
 alias Word := List
 instance: HAppend (Word 𝒜) (Word 𝒜) (Word 𝒜) := ⟨ List.append ⟩
--- instance: EmptyCollection (Word 𝒜) := ⟨ [] ⟩
-
--- set_option quotPrecheck false
--- notation "ε"     => ([]:Word 𝒜)
 
 /-!
 A language is a set of words over an alphabet 𝒜.
@@ -46,8 +41,14 @@ def Language 𝒜 := Set $ Word 𝒜
 instance: Membership (Word 𝒜) (Language 𝒜) := ⟨Set.Mem⟩
 instance: EmptyCollection (Language 𝒜) := ⟨ λ _ => False ⟩
 instance: Union (Language 𝒜) := ⟨Set.union⟩
-def singleLetter (w: 𝒜) : Language 𝒜 := {b | b = [w]}
-instance: Singleton 𝒜 (Language 𝒜) := ⟨singleLetter⟩
+
+def singleWord (w: Word 𝒜) : Language 𝒜 := {b : Word 𝒜 | b = w}
+instance: Singleton (Word 𝒜) (Language 𝒜) := ⟨singleWord⟩
+def singleLetter[Singleton (Word 𝒜) (Language 𝒜)] (w: 𝒜) : Language 𝒜 := {[w]}
+instance [Singleton (Word 𝒜) (Language 𝒜)]: Singleton 𝒜 (Language 𝒜) := ⟨singleLetter⟩
+
+
+instance: HasSubset $ Language 𝒜 := ⟨Set.Subset⟩
 
 inductive Regex 𝒜 :=
 | empty
@@ -70,7 +71,7 @@ postfix:65   "★"    => Regex.star
 -- ε is a derived regex that matches only the empty string
 def ε: Regex 𝒜 := .star .empty
 
-/-!
+/--!
   # Denotational definition of star
   We need this inductive definition to side-step the termination checker
   for the denotational semantics.
@@ -87,15 +88,21 @@ inductive star (l: Language 𝒜) : Language 𝒜
       →------------------
       star l (w₁ ++ w₂)
 
-/-!
+/--!
   # The denotational semantics of a regex is a language
 -/
 def L: Regex 𝒜 → Language 𝒜
 | Φ       => ∅
-| τ c     => { c }
+| τ c     => { [c] }
 | e₁ ⋅ e₂ => { w | ∃ w₁ w₂, w₁ ∈ L e₁ ∧ w₂ ∈ L e₂ ∧ w = w₁ ++ w₂}
 | e₁ ⋃ e₂ => L e₁ ∪ L e₂
 | e★      => { w | w ∈ star (L e) }
+
+/--!
+To write the correctness of the regex derivatiev, `DerL` defines derivative for a language (denotation side).
+The derivative of a language L wrt a character c is the set of all words w for which c⋅w is in L
+-/
+def DerL (c: 𝒜) (L: Language 𝒜) : Language 𝒜 := { w | (c :: w) ∈ L }
 
 lemma star_emptyL: star ∅ w → w = [] := by {
   intro H
@@ -117,19 +124,24 @@ lemma words_in_L_ε (w: Word 𝒜): w ∈ L ε ↔ w = [] := by {
     apply star.star_empty
 }
 
-def Lε  := { w:Word 𝒜 | w = [] }
-
 -- The language of ε is the singleton set { [] }
 --  L ε = { [] }
-lemma eps_denotation: @L 𝒜 ε = Lε := by {
+def Lε : Language 𝒜  := { [] }
+
+lemma eps_denotation: @L 𝒜 ε = {[]} := by {
   apply funext
   intro w
   apply propext
   apply words_in_L_ε
 }
 
-/-!
-  Nullable
+/--!
+  # Nullability
+  The nullability (`δ`) maps a Regex re to ε if the empty word [] is in the language of r
+
+  `δ re =`
+  - `ε if ε ∈ L re`
+  - `Φ otherwise`
 -/
 def δ: Regex 𝒜 → Regex 𝒜
 | Φ       => Φ
@@ -138,6 +150,9 @@ def δ: Regex 𝒜 → Regex 𝒜
 | e₁ ⋃ e₂ => δ e₁ ⋃ δ e₂
 | _★      => ε
 
+/-
+  For any Regex re, the language of (δ re) contains only the empty Word [].
+-/
 lemma δ₁: ∀ w: Word 𝒜, w ∈ L (δ r) → w = [] := by {
   induction r with
   | empty | token _ =>
@@ -184,7 +199,12 @@ lemma δ₁: ∀ w: Word 𝒜, w ∈ L (δ r) → w = [] := by {
     rw [←words_in_L_ε]
     exact h
 }
-lemma δ₂: [] ∈ @L 𝒜 (δ r) → [] ∈ (L r) := by {
+
+/-
+  If the empty word is in the language of δ re, then the empty word is in the language of the re
+  `[] ∈ L (δ r) → [] ∈ (L r)`
+-/
+lemma δ₂: [] ∈ L (δ r) → [] ∈ (L r) := by {
   induction r with
   | empty =>
     simp [L]
@@ -236,7 +256,12 @@ lemma δ₂: [] ∈ @L 𝒜 (δ r) → [] ∈ (L r) := by {
   | star e _ =>
     intro _
     apply star.star_empty
- }
+}
+
+/-
+  The compilation of δ₁ and δ₂.
+  The language of δ r is the singleton { [] } and [] is in the languare of r.
+-/
 lemma δε: w ∈ L (δ r) → w = [] ∧ [] ∈ (L r) := by {
   intro H
   constructor
@@ -259,6 +284,9 @@ lemma he1 : ∀ x z : Word 𝒜, [] = x ++ z → x = [] ∧ z = [] := by {
     tauto
 }
 
+/-!
+  If the empty word is in the language of r, then the empty word is in the language of δ r
+-/
 lemma δ_holds: [] ∈ L r → [] ∈ L (δ r) := by {
   induction r with
   | empty => simp [L]
@@ -310,4 +338,82 @@ lemma δ_holds: [] ∈ L r → [] ∈ L (δ r) := by {
   | star e _ =>
     intro _
     apply star.star_empty
+}
+
+theorem δ_empty: [] ∈ L (δ r) ↔ [] ∈ L r := by {
+  constructor
+  . apply δ₂
+  . apply δ_holds
+}
+
+/-
+ We require decidable equality for 𝒜 (`DecidableEq 𝒜`).
+ Technically, the only thing needed is a function that checks
+ if a character `c` is in the set `t` captured by the token constructor `τ t`
+ Equality is a particular case, in which the set `t` is a singleton.
+ **TODO**:
+ - I keep DecidableEq initially to have the first run at the proofs,
+ - then I'll try to remove this constraint.
+ - So in the end we will require of a letter 𝒜 in the token-type 𝒯 `Membership 𝓐 𝒯`,
+`Membership 𝓐 𝒯` will give us symbolic Regex, where the token will encode a set of letters, with equality as a particular case.
+-/
+variable [deq𝒜: DecidableEq 𝒜]
+/-!
+# Derivative of a Regular Expression
+-/
+def D (c: 𝒜): Regex 𝒜 → Regex 𝒜
+| Φ => Φ
+| τ t => if t = c then ε else Φ
+| e₁ ⋅ e₂ => (D c e₁ ⋅ e₂) ⋃ (δ e₁ ⋅ D c e₂)
+| e₁ ⋃ e₂ => D c e₁ ⋃ D c e₂
+| e★ => D c e ⋅ e★
+
+/-
+ The correctness theorem has the form that
+  The language of the derivative (`L (D c re)`) and the derivative of the language (`D c (L re)`) are the same.
+  That is `∀ w, w ∈ L (D c re) ↔ w ∈ D c (L re)`
+
+  We will approach this proof by stating and proving separate lemmas for each direction of the bi-implication
+  This will get us:
+  1. L (D c re) ⊆ D c (L re)
+  2. D c (L re) ⊆ L (D c re)
+  3. thus L (D c re) = D c (L re)
+-/
+
+theorem LD_imp_DL: ∀ w: Word 𝒜,  w ∈ L (D c re) → w ∈ DerL c (L re) := by {
+  intro w
+  simp [DerL]
+  induction re with
+  | empty =>
+    simp [L]
+    tauto
+  | token t => sorry
+  | concatenation e₁ e₂ ihe₁ ihe₂ => sorry
+  | union e₁ e₂ ihe₁ ihe₂ => sorry
+  | star e ihe => sorry
+
+}
+
+theorem DL_imp_LD: ∀ w: Word 𝒜, w ∈ DerL c (L re) → w ∈ L (D c re) := by {
+  sorry
+}
+
+theorem LD_iff_DL: ∀ w: Word 𝒜,  w ∈ L (D c re) ↔ w ∈ DerL c (L re) := by {
+  intro w
+  constructor
+  apply LD_imp_DL
+  apply DL_imp_LD
+}
+
+theorem LD_sseq_DL (c: 𝒜): L (D c re) ⊆ DerL c (L re) := by {
+  apply LD_imp_DL
+}
+
+theorem DL_sseq_LD (c: 𝒜): DerL c (L re) ⊆ L (D c re) := by {
+  apply DL_imp_LD
+}
+
+theorem LD_eq_DL (c: 𝒜): L (D c re) = DerL c (L re) := by {
+  apply Set.ext
+  apply LD_iff_DL
 }
