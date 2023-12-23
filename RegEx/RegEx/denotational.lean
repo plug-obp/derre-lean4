@@ -1,3 +1,4 @@
+import Mathlib.Init.Data.Nat.Notation
 import Mathlib.Init.Set
 import Mathlib.Tactic.Basic --for Type*
 import Mathlib.Tactic.Tauto
@@ -30,10 +31,13 @@ variable
   Since 𝒜 is a type, X might be a subtype
 -/
 alias Word := List
-instance: HAppend (Word 𝒜) (Word 𝒜) (Word 𝒜) := ⟨ List.append ⟩
+instance: Append (Word 𝒜) := ⟨ List.append ⟩
 instance: HAppend (Word 𝒜) (List 𝒜) (Word 𝒜) := ⟨ List.append ⟩
 instance: HAppend (List 𝒜) (Word 𝒜) (Word 𝒜) := ⟨ List.append ⟩
 
+/-
+  Lift some list lemmas to words
+-/
 @[simp]
 lemma word_append_nil: ∀ w: Word 𝒜, w ++ ([]: List 𝒜) = w := by {
   intro w
@@ -44,6 +48,11 @@ lemma word_append_nil: ∀ w: Word 𝒜, w ++ ([]: List 𝒜) = w := by {
 lemma nil_append_word: ∀ w: Word 𝒜, ([]: List 𝒜) ++ w = w := by {
   intro w
   apply List.nil_append w
+}
+
+lemma word_append_assoc: ∀ w₁ w₂ w₃: Word 𝒜, w₁ ++ w₂ ++ w₃ = w₁ ++ (w₂ ++ w₃) := by {
+  intros w₁ w₂ w₃
+  apply List.append_assoc
 }
 
 /-!
@@ -60,10 +69,101 @@ def singleWord (w: Word 𝒜) : Language 𝒜 := {b : Word 𝒜 | b = w}
 instance: Singleton (Word 𝒜) (Language 𝒜) := ⟨singleWord⟩
 def singleLetter[Singleton (Word 𝒜) (Language 𝒜)] (w: 𝒜) : Language 𝒜 := {[w]}
 instance [Singleton (Word 𝒜) (Language 𝒜)]: Singleton 𝒜 (Language 𝒜) := ⟨singleLetter⟩
-
-
 instance: HasSubset $ Language 𝒜 := ⟨Set.Subset⟩
 
+def concatenationL(L₁ L₂: Language 𝒜): Language 𝒜 :=
+  { w | ∀ w₁ w₂, w₁ ∈ L₁ ∧ w₂ ∈ L₂ ∧ w = w₁ ++ w₂ }
+instance: Append (Language 𝒜) := ⟨concatenationL⟩
+
+/-
+If L is a formal language, then Lⁱ, the iᵗʰ power of L, is the concatenation of L with itself i times.
+That is, Lⁱ can be understood to be the set of all strings that can be represented as the concatenation of i strings in L.
+-/
+def powL (L: Language 𝒜): ℕ → Language 𝒜
+| 0 => { [] }
+| (n+1) => L ++ (powL L n)
+instance: HPow (Language 𝒜) ℕ (Language 𝒜) := ⟨powL⟩
+
+/-
+The free monoid L^* is called the "Kleene star of A". Also known as Kleene closure.
+-/
+def kleene_closure(L: Language 𝒜): Language 𝒜 :=
+  { w | ∀ n: ℕ, w ∈ (L ^ n)}
+postfix:65   "⊛"    => kleene_closure
+@[simp]
+lemma kleene_closure_idempotent (L: Language 𝒜): L⊛⊛ = L⊛ := by {
+  apply Set.ext
+  intro w
+  sorry
+}
+
+def positive_closure(L: Language 𝒜): Language 𝒜 := L ++ (L⊛)
+postfix:65   "⊕"    => positive_closure
+
+def sigma (𝒜: Type*): Language 𝒜 := { [a] | a : 𝒜 }
+-- notation "Σ" => sigma
+
+-- The language of ε is the singleton set { [] }
+--  L ε = { [] }
+def Lε : Language 𝒜  := { [] }
+
+@[simp]
+lemma empty_concatenation: ∀ L: Language 𝒜, ∅ ++ L = ∅ := by {
+  sorry
+}
+
+@[simp]
+lemma concatenation_empty: ∀ L: Language 𝒜, L ++ ∅ = ∅ := by {
+  sorry
+}
+
+@[simp]
+lemma empty_pow: ∀ n: ℕ, (∅: Language 𝒜) ^ n = {} := by {
+  sorry
+}
+
+@[simp]
+lemma empty_star_is_ε: (∅: Language 𝒜)⊛ = Lε := by {
+  sorry
+}
+
+@[simp]
+lemma ε_concatenation: ∀ L: Language 𝒜, Lε ++ L = L := by {
+  sorry
+}
+
+@[simp]
+lemma concatenation_ε: ∀ L: Language 𝒜, L ++ Lε = L := by {
+  sorry
+}
+
+lemma ε_pow: ∀ n: ℕ, (Lε: Language 𝒜) ^ n = Lε := by {
+  sorry
+}
+
+@[simp]
+lemma ε_star: (Lε: Language 𝒜)⊛ = Lε := by {
+  simp [kleene_closure, ε_pow]
+  rfl
+}
+
+@[simp]
+lemma ε_positive_closure: (Lε: Language 𝒜) ⊕ = Lε := by {
+  simp [positive_closure, ε_star]
+}
+
+@[simp]
+lemma ε_pow_positive_closure: ∀ n: ℕ, (Lε: Language 𝒜) ^ n ⊕ = Lε := by {
+  intro n
+  simp [positive_closure, ε_pow, ε_concatenation, ε_star]
+}
+
+/-!
+  # Regular Expressions
+  A regular expression is a symbolic representation of a set of strings.
+  The set of strings represented by a regular expression 𝓇 is denoted by L(𝓇).
+  The set of all regular expressions over an alphabet 𝒜 is denoted by ℛ(𝒜).
+-/
 inductive Regex 𝒜 :=
 | empty
 | token         (c: 𝒜)
@@ -138,10 +238,6 @@ lemma words_in_L_ε (w: Word 𝒜): w ∈ L ε ↔ w = [] := by {
     apply star.star_empty
 }
 
--- The language of ε is the singleton set { [] }
---  L ε = { [] }
-def Lε : Language 𝒜  := { [] }
-
 lemma eps_denotation: @L 𝒜 ε = {[]} := by {
   apply funext
   intro w
@@ -207,7 +303,7 @@ lemma Lε_star: @L 𝒜 (ε★) = Lε := by {
 }
 
 @[simp]
-lemma ε_concatenation: ∀ e: Regex 𝒜, L (ε ⋅ e) = L e := by {
+lemma re_ε_concatenation: ∀ e: Regex 𝒜, L (ε ⋅ e) = L e := by {
   intro e
   apply funext
   intro w
@@ -217,7 +313,7 @@ lemma ε_concatenation: ∀ e: Regex 𝒜, L (ε ⋅ e) = L e := by {
 }
 
 @[simp]
-lemma concatenation_ε: ∀ e: Regex 𝒜, L (e ⋅ ε) = L e := by {
+lemma re_concatenation_ε: ∀ e: Regex 𝒜, L (e ⋅ ε) = L e := by {
   sorry
 }
 
