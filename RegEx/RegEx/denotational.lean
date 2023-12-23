@@ -31,6 +31,20 @@ variable
 -/
 alias Word := List
 instance: HAppend (Word 𝒜) (Word 𝒜) (Word 𝒜) := ⟨ List.append ⟩
+instance: HAppend (Word 𝒜) (List 𝒜) (Word 𝒜) := ⟨ List.append ⟩
+instance: HAppend (List 𝒜) (Word 𝒜) (Word 𝒜) := ⟨ List.append ⟩
+
+@[simp]
+lemma word_append_nil: ∀ w: Word 𝒜, w ++ ([]: List 𝒜) = w := by {
+  intro w
+  apply List.append_nil w
+}
+
+@[simp]
+lemma nil_append_word: ∀ w: Word 𝒜, ([]: List 𝒜) ++ w = w := by {
+  intro w
+  apply List.nil_append w
+}
 
 /-!
 A language is a set of words over an alphabet 𝒜.
@@ -134,6 +148,222 @@ lemma eps_denotation: @L 𝒜 ε = {[]} := by {
   apply propext
   apply words_in_L_ε
 }
+
+/--!
+
+Equalities
+
+-/
+
+@[simp]
+lemma L_empty: L (Φ: Regex 𝒜) = ∅ := by {
+  apply funext
+  intro w
+  apply propext
+  simp [L]
+}
+
+@[simp]
+lemma L_token: ∀ c: 𝒜, L (τ c) = {[c]} := by {
+  intro c
+  apply funext
+  intro w
+  apply propext
+  simp [L]
+}
+
+@[simp]
+lemma L_union: ∀ e₁ e₂: Regex 𝒜, L (e₁ ⋃ e₂) = L e₁ ∪ L e₂ := by {
+  intros e₁ e₂
+  apply funext
+  intro w
+  apply propext
+  simp [L]
+}
+
+lemma L_concatenation: ∀ e₁ e₂: Regex 𝒜, L (e₁ ⋅ e₂) = { w | ∃ w₁ w₂, w₁ ∈ L e₁ ∧ w₂ ∈ L e₂ ∧ w = w₁ ++ w₂} := by {
+  intros e₁ e₂
+  apply funext
+  intro w
+  apply propext
+  simp [L]
+}
+
+lemma L_star: ∀ e: Regex 𝒜, L (e★) = { w | w ∈ star (L e) } := by {
+  intro e
+  apply funext
+  intro w
+  apply propext
+  simp [L]
+}
+
+@[simp]
+lemma Lε_star: @L 𝒜 (ε★) = Lε := by {
+  apply funext
+  intro w
+  apply propext
+  simp [L]
+  sorry
+}
+
+@[simp]
+lemma ε_concatenation: ∀ e: Regex 𝒜, L (ε ⋅ e) = L e := by {
+  intro e
+  apply funext
+  intro w
+  apply propext
+  simp [L]
+  sorry
+}
+
+@[simp]
+lemma concatenation_ε: ∀ e: Regex 𝒜, L (e ⋅ ε) = L e := by {
+  sorry
+}
+
+@[simp]
+lemma Φ_concatenation: ∀ e: Regex 𝒜, L (Φ ⋅ e) = ∅ := by {
+  intro e
+  apply funext
+  intro w
+  apply propext
+  simp [L]
+  sorry
+}
+
+@[simp]
+lemma concatenation_Φ: ∀ e: Regex 𝒜, L (e ⋅ Φ) = ∅ := by {
+  intro e
+  apply funext
+  intro w
+  apply propext
+  simp [L]
+  sorry
+}
+
+lemma concatenation_assoc: ∀ e₁ e₂ e₃: Regex 𝒜, L ((e₁ ⋅ e₂) ⋅ e₃) = L (e₁ ⋅ (e₂ ⋅ e₃)) := by {
+  intros e₁ e₂ e₃
+  apply funext
+  intro w
+  apply propext
+  sorry
+}
+
+@[simp]
+lemma empty_union_e: ∀ e: Regex 𝒜, L (Φ ⋃ e) = L e := by {
+  intro e
+  apply funext
+  intro w
+  apply propext
+  simp [L]
+  constructor
+  . intro H
+    cases H with
+    | inl Hl => exfalso; exact Hl
+    | inr Hr => exact Hr
+  . intro H
+    apply Or.inr
+    exact H
+}
+
+@[simp]
+lemma union_idempotent: ∀ e: Regex 𝒜, L (e ⋃ e) = L e := by {
+  intro e
+  apply funext
+  intro w
+  apply propext
+  simp [*]
+  constructor
+  . intro H
+    cases H with
+    | inl Hl => exact Hl
+    | inr Hr => exact Hr
+  . intro H
+    apply Or.inr
+    exact H
+}
+
+lemma union_comm: ∀ r₁ r₂: Regex 𝒜, L (r₁ ⋃ r₂) = L (r₂ ⋃ r₁) := by {
+  intros r₁ r₂
+  apply funext
+  intro w
+  apply propext
+  simp [L]
+  constructor
+  . intro H
+    cases H with
+    | inl Hl => apply Or.inr; exact Hl
+    | inr Hr => apply Or.inl; exact Hr
+  . intro H
+    cases H with
+    | inl Hl => apply Or.inr; exact Hl
+    | inr Hr => apply Or.inl; exact Hr
+}
+
+lemma union_assoc: ∀ r₁ r₂ r₃: Regex 𝒜, L ((r₁ ⋃ r₂) ⋃ r₃) = L (r₁ ⋃ (r₂ ⋃ r₃)) := by {
+  intros r₁ r₂ r₃
+  apply funext
+  intro w
+  apply propext
+  simp [L]
+  sorry
+}
+
+@[simp]
+lemma union_empty: ∀ r: Regex 𝒜, L (r ⋃ Φ) = L r := by {
+  intro r
+  apply funext
+  intro w
+  apply propext
+  simp [L]
+  constructor
+  . intro H
+    cases H with
+    | inl Hl => exact Hl
+    | inr Hr => exfalso; exact Hr
+  . intro H
+    apply Or.inl
+    exact H
+}
+
+@[simp]
+lemma union_empty': ∀ r: Regex 𝒜, L (Φ ⋃ r) = L r := by {
+  intro r
+  rw [union_comm]
+  apply union_empty
+}
+
+@[simp]
+lemma star_star: ∀ e: Regex 𝒜, L (e★★) = L (e★) := by {
+  intro e
+  apply funext
+  intro w
+  apply propext
+  simp [L]
+  constructor
+  . intro H
+    cases H with
+    | star_empty =>
+      apply star.star_empty
+    | star_iter w₁ w₂ w₁_in_e hw₂ =>
+      cases hw₂ with
+      | star_empty =>
+        conv in (w₁ ++ []) => apply word_append_nil
+        exact w₁_in_e
+      | star_iter w₃ w₄ w₃_in_e hw₄ =>
+        apply star.star_iter
+        . sorry
+        . sorry
+  . intro H
+    cases H with
+    | star_empty =>
+      apply star.star_empty
+    | star_iter w₁ w₂ w₁_in_e hw₂ =>
+      apply star.star_iter
+      . sorry
+      . sorry
+}
+
 
 /--!
   # Nullability
@@ -381,21 +611,66 @@ def D (c: 𝒜): Regex 𝒜 → Regex 𝒜
 -/
 
 theorem LD_imp_DL: ∀ w: Word 𝒜,  w ∈ L (D c re) → w ∈ DerL c (L re) := by {
-  intro w
-  simp [DerL]
+  intro w₁
+
   induction re with
   | empty =>
     simp [L]
     tauto
-  | token t => sorry
-  | concatenation e₁ e₂ ihe₁ ihe₂ => sorry
-  | union e₁ e₂ ihe₁ ihe₂ => sorry
-  | star e ihe => sorry
+  | token t =>
+    simp [D, L, DerL]
+    intro Hw₁
+    sorry
 
+  | concatenation e₁ e₂ ihe₁ ihe₂ => sorry
+  | union e₁ e₂ ihe₁ ihe₂ =>
+    simp [L, DerL] at *
+    intro H
+    cases H with
+    | inl Hw =>
+      apply Or.inl
+      apply ihe₁
+      exact Hw
+    | inr Hw =>
+      apply Or.inr
+      apply ihe₂
+      exact Hw
+  | star e ihe =>
+    simp [DerL] at *
+    intro Hw
+    cases Hw with
+    | star_empty => sorry
+    | star_iter w₁ w₂ w₁_in_e hw₂ =>
+      sorry
 }
 
 theorem DL_imp_LD: ∀ w: Word 𝒜, w ∈ DerL c (L re) → w ∈ L (D c re) := by {
-  sorry
+  intros w₁ hw₁
+  simp [DerL] at *
+  induction re with
+  | empty =>
+    simp [L, D]
+    tauto
+  | token t =>
+    simp [L, D]
+    cases hw₁
+    simp [*]
+    rw [words_in_L_ε]
+  | concatenation e₁ e₂ ihe₁ ihe₂ => sorry
+  | union e₁ e₂ ihe₁ ihe₂ =>
+    simp [L, D] at *
+    cases hw₁ with
+    | inl hw =>
+      apply Or.inl
+      apply ihe₁
+      exact hw
+    | inr hw =>
+      apply Or.inr
+      apply ihe₂
+      exact hw
+  | star e ihe =>
+    simp [D] at *
+    sorry
 }
 
 theorem LD_iff_DL: ∀ w: Word 𝒜,  w ∈ L (D c re) ↔ w ∈ DerL c (L re) := by {
