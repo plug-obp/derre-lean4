@@ -5,9 +5,6 @@ import Mathlib.Data.Set.Lattice
 import Mathlib.Algebra.Ring.Basic
 
 import Mathlib.Algebra.Order.Kleene
--- import Mathlib.Algebra.Ring.Hom.Defs
--- import Mathlib.Data.List.Join
--- import Mathlib.Data.Set.Lattice
 import Mathlib.Tactic.DeriveFintype
 
 import Mathlib.Tactic.Basic --for Type*
@@ -106,14 +103,6 @@ lemma nil_concat: ∀ L: Language 𝒜, {} ++ L = {} := by {
   apply Set.image2_empty_left
 }
 
-lemma concat_empty_right (L: Language 𝒜): L ++ {[]} = L := by {
-  sorry
-}
-
-lemma concat_empty_left (L: Language 𝒜): {[]} ++ L = L := by {
-  sorry
-}
-
 instance Language.toCompleteAtomicBooleanAlgebra: CompleteAtomicBooleanAlgebra (Language 𝒜) := inferInstanceAs (CompleteAtomicBooleanAlgebra (Set (Word 𝒜)))
 
 instance Language.zero: Zero (Language 𝒜) := ⟨ ∅ ⟩
@@ -172,25 +161,20 @@ instance Language.toSemiring : Semiring (Language 𝒜) where
 /-
 If L is a formal language, then Lⁱ, the iᵗʰ power of L, is the concatenation of L with itself i times.
 That is, Lⁱ can be understood to be the set of all strings that can be represented as the concatenation of i strings in L.
+This operation comes from free from the Monoid instance induced by the Semiring instance.
 -/
 -- def powL (L: Language 𝒜): ℕ → Language 𝒜
 -- | 0 => { [] }
 -- | (n+1) => L * (powL L n)
 -- instance: HPow (Language 𝒜) ℕ (Language 𝒜) := ⟨powL⟩
 
-
-
 @[simp]
 lemma powL_zero (L: Language 𝒜): L ^ 0 = 1 := rfl
 
+lemma powL_n (L: Language 𝒜): L ^ (n+1) = L * (L ^ n) := by apply pow_succ
 
-lemma powL_n (L: Language 𝒜): L ^ (n+1) = L * (L ^ n) := by {
-  sorry
-}
-
-lemma powL_one (L: Language 𝒜): L ^ 1 = L := by {
-  simp [powL_n]
-}
+@[simp]
+lemma powL_one (L: Language 𝒜): L ^ 1 = L := by apply pow_one
 
 /-
 The free monoid L^* is called the "Kleene star of A". Also known as Kleene closure.
@@ -312,19 +296,13 @@ def sigma (𝒜: Type*): Language 𝒜 := { [a] | a : 𝒜 }
 def Lε : Language 𝒜  := { [] }
 
 @[simp]
-lemma empty_concatenation: ∀ L: Language 𝒜, ∅ ++ L = ∅ := by {
-  sorry
-}
+lemma empty_concatenation: ∀ L: Language 𝒜, ∅ ++ L = ∅ := by apply zero_mul
 
 @[simp]
-lemma concatenation_empty: ∀ L: Language 𝒜, L ++ ∅ = ∅ := by {
-  sorry
-}
+lemma concatenation_empty: ∀ L: Language 𝒜, L ++ ∅ = ∅ := by apply mul_zero
 
 @[simp]
-lemma empty_pow: ∀ n: ℕ, (∅: Language 𝒜) ^ n = {} := by {
-  sorry
-}
+lemma empty_pow: n > 0 → (∅: Language 𝒜) ^ n = ∅ := by apply zero_pow
 
 @[simp]
 lemma empty_star_is_ε: (∅: Language 𝒜)∗ = Lε := by {
@@ -332,28 +310,18 @@ lemma empty_star_is_ε: (∅: Language 𝒜)∗ = Lε := by {
 }
 
 @[simp]
-lemma ε_concatenation: ∀ L: Language 𝒜, Lε ++ L = L := by {
-  sorry
-}
+lemma ε_concatenation: ∀ L: Language 𝒜, Lε ++ L = L := by apply one_mul
 
 @[simp]
-lemma concatenation_ε: ∀ L: Language 𝒜, L ++ Lε = L := by {
-  sorry
-}
+lemma concatenation_ε: ∀ L: Language 𝒜, L ++ Lε = L := by apply mul_one
 
-lemma ε_pow: ∀ n: ℕ, (Lε: Language 𝒜) ^ n = Lε := by {
-  sorry
-}
+lemma ε_pow: ∀ n: ℕ, (Lε: Language 𝒜) ^ n = Lε := by apply one_pow
 
 @[simp]
-lemma ε_star: (Lε: Language 𝒜)∗ = Lε := by {
-  apply kstar_one
-}
+lemma ε_star: (Lε: Language 𝒜)∗ = Lε := by apply kstar_one
 
 @[simp]
-lemma ε_positive_closure: (Lε: Language 𝒜) ⊕ = Lε := by {
-  simp [positive_closure, ε_star]
-}
+lemma ε_positive_closure: (Lε: Language 𝒜) ⊕ = Lε := by simp [positive_closure, ε_star]
 
 @[simp]
 lemma ε_pow_positive_closure: ∀ n: ℕ, (Lε: Language 𝒜) ^ n ⊕ = Lε := by {
