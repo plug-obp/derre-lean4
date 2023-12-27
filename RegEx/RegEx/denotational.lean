@@ -1,16 +1,12 @@
-import Mathlib.Init.Data.Nat.Notation
-import Mathlib.Init.Set
-import Mathlib.Data.Set.NAry
-import Mathlib.Data.Set.Lattice
-import Mathlib.Algebra.Ring.Basic
-
+-- import Mathlib.Init.Data.Nat.Notation
+-- import Mathlib.Init.Set
+-- import Mathlib.Data.Set.NAry
+-- import Mathlib.Data.Set.Lattice
+-- import Mathlib.Algebra.Ring.Basic
+import Mathlib.Algebra.GroupPower.Ring
 import Mathlib.Algebra.Order.Kleene
-import Mathlib.Tactic.DeriveFintype
 
-import Mathlib.Tactic.Basic --for Type*
-import Mathlib.Tactic.Tauto
-import Mathlib.Tactic.PushNeg
-import Mathlib.Tactic.LibrarySearch
+-- import Mathlib.Tactic.Basic --for Type*
 
 /-!
 # Inspired by
