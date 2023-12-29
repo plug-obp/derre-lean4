@@ -1,5 +1,6 @@
 import Mathlib.Tactic.Basic --for Type*
-import «RegEx».language
+import «RegEx».Language.language
+import «RegEx».Language.derivative
 import «RegEx».denotational
 
 /--!
@@ -210,7 +211,7 @@ variable [deq𝒜: DecidableEq 𝒜]
 -/
 def D (c: 𝒜): Regex 𝒜 → Regex 𝒜
 | Φ => Φ
-| τ t => if t = c then ε else Φ
+| τ t => if c = t then ε else Φ
 | e₁ ⋅ e₂ => (D c e₁ ⋅ e₂) ⋃ (δ e₁ ⋅ D c e₂)
 | e₁ ⋃ e₂ => D c e₁ ⋃ D c e₂
 | e★ => D c e ⋅ e★
@@ -221,7 +222,7 @@ lemma D_empty: ∀ c: 𝒜, D c (Φ: Regex 𝒜) = Φ := by {
 }
 
 @[simp]
-lemma D_token: ∀ c: 𝒜, ∀ t: 𝒜, D c (τ t) = if t = c then ε else Φ := by {
+lemma D_token: ∀ c: 𝒜, ∀ t: 𝒜, D c (τ t) = if c = t then ε else Φ := by {
   simp [D]
 }
 
@@ -251,19 +252,34 @@ lemma D_star: ∀ c: 𝒜, ∀ e: Regex 𝒜, D c (e★) = D c e ⋅ e★ := by 
 
 theorem LD_imp_DL_token: ∀ w: Word 𝒜, w ∈ L (D c (τ t)) → w ∈ DerL c (L (τ t)) := by {
   intros w Hw
-  simp [L, D] at *
+  simp [DerL_singleton, D_token] at *
+  split
+  next heq =>
+    rw [←heq] at Hw
+    simp [L] at Hw
+    exact Hw
+  next hneq =>
+    simp [*] at Hw
+    exact Hw
+}
+
+theorem LD_imp_DL_concat {w: Word 𝒜}
+(ihe₁: w ∈ L (D c e₁) → w ∈ DerL c (L e₁))
+(ihe₂: w ∈ L (D c e₂) → w ∈ DerL c (L e₂))
+: w ∈ L (D c (e₁⋅e₂)) → w ∈ DerL c (L (e₁⋅e₂)) := by {
   sorry
 }
 
 theorem LD_imp_DL: ∀ w: Word 𝒜,  w ∈ L (D c re) → w ∈ DerL c (L re) := by {
-  intro w₁
+  intro w
   induction re with
   | empty =>
     simp [L]
     tauto
   | token t =>
     apply LD_imp_DL_token
-  | concatenation e₁ e₂ ihe₁ ihe₂ => sorry
+  | concatenation e₁ e₂ ihe₁ ihe₂ =>
+    apply (LD_imp_DL_concat ihe₁ ihe₂)
   | union e₁ e₂ ihe₁ ihe₂ =>
     simp [L, DerL] at *
     intro H
@@ -283,22 +299,32 @@ theorem LD_imp_DL: ∀ w: Word 𝒜,  w ∈ L (D c re) → w ∈ DerL c (L re) :
     sorry
 }
 
+lemma DL_imp_LD_concat
+{w: Word 𝒜}
+(ihe₁: w ∈ DerL c (L e₁) → w ∈ L (D c e₁))
+(ihe₂: w ∈ DerL c (L e₂) → w ∈ L (D c e₂))
+: w ∈ DerL c (L (e₁⋅e₂)) → w ∈ L (D c (e₁⋅e₂)) := by {
+  sorry
+}
+
 theorem DL_imp_LD: ∀ w: Word 𝒜, w ∈ DerL c (L re) → w ∈ L (D c re) := by {
-  intros w₁ hw₁
-  simp [DerL] at *
+  intros w
   induction re with
   | empty =>
     simp [L, D]
     tauto
   | token t =>
+    intro hw
     simp [L, D]
-    cases hw₁
+    cases hw
     simp [*]
     rw [words_in_L_ε]
-  | concatenation e₁ e₂ ihe₁ ihe₂ => sorry
+  | concatenation e₁ e₂ ihe₁ ihe₂ =>
+    apply DL_imp_LD_concat ihe₁ ihe₂
   | union e₁ e₂ ihe₁ ihe₂ =>
+    intro hw
     simp [L, D] at *
-    cases hw₁ with
+    cases hw with
     | inl hw =>
       apply Or.inl
       apply ihe₁
@@ -308,8 +334,13 @@ theorem DL_imp_LD: ∀ w: Word 𝒜, w ∈ DerL c (L re) → w ∈ L (D c re) :=
       apply ihe₂
       exact hw
   | star e ihe =>
-    simp [D] at *
-    sorry
+    intro hw
+    simp [L, D] at *
+    induction w with
+    | nil =>
+      apply nil_mem_star
+    | cons h t ihw =>
+      sorry
 }
 
 theorem LD_iff_DL: ∀ w: Word 𝒜,  w ∈ L (D c re) ↔ w ∈ DerL c (L re) := by {

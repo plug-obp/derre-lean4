@@ -1,5 +1,5 @@
 import «RegEx».syntax
-import «RegEx».language
+import «RegEx».Language.language
 
 -- The 𝒜lphabet
 variable

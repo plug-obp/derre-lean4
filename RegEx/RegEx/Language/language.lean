@@ -48,6 +48,23 @@ instance: HAppend (List 𝒜) (Word 𝒜) (Word 𝒜) := ⟨ List.append ⟩
 /-
   Lift some list lemmas to words
 -/
+
+@[simp]
+lemma cons_nil (h: 𝒜): ∀ t: Word 𝒜, h :: t = [h] ↔ t = [] := by {
+  intros t
+  constructor
+  . intros H
+    simp [*] at *
+    exact H
+  . intros H
+    simp [*] at *
+}
+
+lemma cons_ne_nil (h: 𝒜): ∀ t: Word 𝒜, h :: t ≠ [] := by {
+  intro t
+  apply List.cons_ne_nil h t
+}
+
 @[simp]
 lemma word_append_nil: ∀ w: Word 𝒜, w ++ ([]: Word 𝒜) = w := by {
   intro w
@@ -141,6 +158,34 @@ theorem not_mem_zero (x : Word α) : x ∉ (0 : Language α) :=
 
 @[simp]
 theorem mem_one (x : Word α) : x ∈ (1 : Language α) ↔ x = [] := by rfl
+
+@[simp]
+theorem mem_letter (w : Word 𝒜) : w ∈ ({[a]}: Language 𝒜) ↔ w = [a] := by rfl
+
+@[simp]
+theorem mem_cons (h: 𝒜)(w : Word 𝒜) : h::w ∈ ({[h]}: Language 𝒜) ↔ w = [] := by {
+  constructor
+  . intro H
+    rw [mem_letter] at H
+    apply (cons_nil h w).mp
+    exact H
+  . intro H
+    rw [mem_letter]
+    rw [H]
+}
+
+@[simp]
+theorem cons_not_mem (h a: 𝒜)(w : Word 𝒜) : h::w ∈ ({[a]}: Language 𝒜) ↔ h = a ∧ w = [] := by {
+  constructor
+  . intro H
+    rw [mem_letter] at H
+    injection H with hh ht
+    exact ⟨hh, ht⟩
+  . intro H
+    rw [mem_letter]
+    rw [H.1]
+    rw [H.2]
+}
 
 instance Language.toSemiring : Semiring (Language 𝒜) where
   add := (· + ·)
@@ -389,62 +434,24 @@ lemma ε_pow_positive_closure: ∀ n: ℕ, (Lε: Language 𝒜) ^ n ⊕ = Lε :=
   simp [positive_closure, ε_pow, ε_concatenation, ε_star]
 }
 
-/--!
-To write the correctness of the regex derivatiev, `DerL` defines derivative for a language (denotation side).
-The derivative of a language L wrt a character c is the set of all words w for which c⋅w is in L
--/
-def DerL (c: 𝒜) (L: Language 𝒜) : Language 𝒜 := { w | (c :: w) ∈ L }
-
-lemma DerL_def (c: 𝒜) (L: Language 𝒜) : DerL c L = { w | (c :: w) ∈ L } := rfl
-lemma DerL_empty (c: 𝒜) : DerL c ∅ = ∅ := by {
-  simp [DerL_def]
-  rfl
-}
-lemma DerL_epsilon (c: 𝒜) : DerL c Lε = ∅ := by {
-  ext w₁
-  constructor <;> (intro _; contradiction)
-}
-
-lemma DerL_singleton_eq(c: 𝒜):
-  DerL c {[c]} = Lε := by {
-  ext w₁
-  simp [DerL_def, Lε]
+lemma tail_empty_singleton: {w: Word 𝒜 | (c :: w) ∈ ( {[c]}: Language 𝒜)} = Lε := by {
+  ext _
+  simp [Lε]
   constructor
   . intro H
-    cases w₁ with
-    | nil => rfl
-    | cons h t =>
-      exfalso
-      have hx: {w: Word 𝒜 | (c :: w) ∈ ( {[c]}: Language 𝒜)} = Lε := by sorry
-      have ht: h :: t ∈ Lε := by rw [←hx]; exact H
-      contradiction
+    rw [H]
+    rfl
   . intro H
     tauto
 }
 
-lemma DerL_singleton_neq(c: 𝒜) (d: 𝒜)(hne: c ≠ d) :
-  DerL c {[d]} = ∅ := by {
-  ext w₁
-  simp [DerL_def]
+lemma empty_singleton (hne: c ≠ d): {w: Word 𝒜 | (c :: w) ∈ ( {[d]}: Language 𝒜)} = ∅ := by {
+  ext w
   constructor
   . intro H
-    have hx: {w: Word 𝒜 | (c :: w) ∈ ( {[d]}: Language 𝒜)} = ∅ := by sorry
-    rw [←hx]; exact H
+    simp at H
+    exfalso
+    tauto
   . intro H
     contradiction
-}
-
-lemma DerL_singleton(c: 𝒜) (d: 𝒜)[hdeq: Decidable (c = d)] :
-  DerL c {[d]} = (if c = d then Lε else ∅) := by {
-  ext w₁
-  split
-  next cd => simp [cd, DerL_singleton_eq]
-  next cnd => simp [DerL_singleton_neq _ _ cnd]
-}
-
-lemma der_head_single(w: Word 𝒜): c = x → w ∈ DerL c {[x]} → w = [] := by {
-  intro H Hw
-  rw [H] at Hw
-  simp [DerL_singleton_eq] at *
-  exact Hw
 }
