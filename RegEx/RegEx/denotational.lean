@@ -241,6 +241,11 @@ lemma star_star: ∀ e: Regex 𝒜, L (e★★) = L (e★) := by {
   simp [L]
 }
 
+instance: HAdd (Regex 𝒜) (Regex 𝒜) (Regex 𝒜) := ⟨ Regex.union ⟩
+instance: Zero (Regex 𝒜) := ⟨Regex.empty⟩
+instance: One (Regex 𝒜) := ⟨ε⟩
+instance: HMul (Regex 𝒜) (Regex 𝒜) (Regex 𝒜) := ⟨ Regex.concatenation ⟩
+
 /--!
   # Nullability
   The nullability (`δ`) maps a Regex re to ε if the empty word [] is in the language of r
@@ -480,6 +485,28 @@ def D (c: 𝒜): Regex 𝒜 → Regex 𝒜
 | e₁ ⋃ e₂ => D c e₁ ⋃ D c e₂
 | e★ => D c e ⋅ e★
 
+@[simp]
+lemma D_empty: ∀ c: 𝒜, D c (Φ: Regex 𝒜) = Φ := by {
+  simp [D]
+}
+
+@[simp]
+lemma D_token: ∀ c: 𝒜, ∀ t: 𝒜, D c (τ t) = if t = c then ε else Φ := by {
+  simp [D]
+}
+
+lemma D_concatenation: ∀ c: 𝒜, ∀ e₁ e₂: Regex 𝒜, D c (e₁ ⋅ e₂) = (D c e₁ ⋅ e₂) ⋃ (δ e₁ ⋅ D c e₂) := by {
+  simp [D]
+}
+
+lemma D_union: ∀ c: 𝒜, ∀ e₁ e₂: Regex 𝒜, D c (e₁ ⋃ e₂) = D c e₁ ⋃ D c e₂ := by {
+  simp [D]
+}
+
+lemma D_star: ∀ c: 𝒜, ∀ e: Regex 𝒜, D c (e★) = D c e ⋅ e★ := by {
+  simp [D]
+}
+
 /-
  The correctness theorem has the form that
   The language of the derivative (`L (D c re)`) and the derivative of the language (`D c (L re)`) are the same.
@@ -492,18 +519,20 @@ def D (c: 𝒜): Regex 𝒜 → Regex 𝒜
   3. thus L (D c re) = D c (L re)
 -/
 
+theorem LD_imp_DL_token: ∀ w: Word 𝒜, w ∈ L (D c (τ t)) → w ∈ DerL c (L (τ t)) := by {
+  intros w Hw
+  simp [L, D] at *
+  sorry
+}
+
 theorem LD_imp_DL: ∀ w: Word 𝒜,  w ∈ L (D c re) → w ∈ DerL c (L re) := by {
   intro w₁
-
   induction re with
   | empty =>
     simp [L]
     tauto
   | token t =>
-    simp [D, L, DerL]
-    intro Hw₁
-    sorry
-
+    apply LD_imp_DL_token
   | concatenation e₁ e₂ ihe₁ ihe₂ => sorry
   | union e₁ e₂ ihe₁ ihe₂ =>
     simp [L, DerL] at *
@@ -520,10 +549,8 @@ theorem LD_imp_DL: ∀ w: Word 𝒜,  w ∈ L (D c re) → w ∈ DerL c (L re) :
   | star e ihe =>
     simp [DerL] at *
     intro Hw
-    cases Hw with
-    | star_empty => sorry
-    | star_iter w₁ w₂ w₁_in_e hw₂ =>
-      sorry
+    simp [L, D] at *
+    sorry
 }
 
 theorem DL_imp_LD: ∀ w: Word 𝒜, w ∈ DerL c (L re) → w ∈ L (D c re) := by {
