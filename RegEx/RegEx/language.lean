@@ -221,8 +221,8 @@ theorem mul_self_kstar_comm (l : Language α) : l∗ * l = l * l∗ := by
 theorem one_add_kstar_mul_self_eq_kstar (l : Language α) : 1 + l∗ * l = l∗ := by
   rw [mul_self_kstar_comm, one_add_self_mul_kstar_eq_kstar]
 
-noncomputable instance Language.toKleeneAlgebra: KleeneAlgebra (Language 𝒜) :=
-  { Language.toSemiring, Language.toCompleteAtomicBooleanAlgebra, Language.kstar with
+instance Language.toKleeneAlgebra: KleeneAlgebra (Language 𝒜) :=
+  { Language.toSemiring, Language.toCompleteAtomicBooleanAlgebra with
     one_le_kstar := λ L w hw ↦ (by exists 0),
     mul_kstar_le_kstar := fun L ↦ (one_add_self_mul_kstar_eq_kstar L).le.trans' le_sup_right,
     kstar_mul_le_kstar := fun L ↦ (one_add_kstar_mul_self_eq_kstar L).le.trans' le_sup_right,
@@ -379,3 +379,15 @@ To write the correctness of the regex derivatiev, `DerL` defines derivative for 
 The derivative of a language L wrt a character c is the set of all words w for which c⋅w is in L
 -/
 def DerL (c: 𝒜) (L: Language 𝒜) : Language 𝒜 := { w | (c :: w) ∈ L }
+
+lemma der_head_single(w: Word 𝒜): c = x → w ∈ DerL c {[x]} → w = [] := by {
+  intro H Hw
+  simp [DerL] at *
+  cases w with
+  | nil =>
+    simp [DerL]
+  | cons h t =>
+    exfalso
+    rw [H] at Hw
+    sorry
+}
