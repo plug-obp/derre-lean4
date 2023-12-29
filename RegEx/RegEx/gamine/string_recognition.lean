@@ -1,7 +1,7 @@
 import «Gamine»
 import «LString»
-import «RegEx».syntax
-import «RegEx».brzozowski
+import «RegEx».gamine.syntax_gamine
+import «RegEx».gamine.brzozowski_gamine
 
 -- http://www.ucombinator.org/projects/parsing/
 
