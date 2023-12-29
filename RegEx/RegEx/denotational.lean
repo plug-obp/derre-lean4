@@ -339,13 +339,21 @@ lemma eps_in_each_eps_in_both (e₁ e₂: Regex 𝒜): [] ∈ L e₁ → [] ∈ 
   exists []
 }
 
-lemma eps_in_both_eps_in_e₁ (e₁ e₂: Regex 𝒜): [] ∈ (L e₁ * L e₂) → [] ∈ L e₁ := by {
+lemma eps_in_concat_eps_in_both (e₁ e₂: Regex 𝒜): [] ∈ (L e₁ * L e₂) → ([] ∈ L e₁ ∧ [] ∈ L e₂) := by {
   intro H
-  sorry
+  let ⟨_, _, hx, hy, hxy⟩ := H
+  simp [*] at *
+  simp [nil_append_nil] at *
+  rw [hxy.1] at hx
+  rw [hxy.2] at hy
+  exact ⟨hx, hy⟩
 }
-lemma eps_in_both_eps_in_e₂ (e₁ e₂: Regex 𝒜): [] ∈ (L e₁ * L e₂) → [] ∈ L e₂ := by {
-  sorry
-}
+
+lemma eps_in_both_eps_in_e₁ (e₁ e₂: Regex 𝒜): [] ∈ (L e₁ * L e₂) → [] ∈ L e₁ :=
+  λ H ↦ eps_in_concat_eps_in_both e₁ e₂ H |>.1
+
+lemma eps_in_both_eps_in_e₂ (e₁ e₂: Regex 𝒜): [] ∈ (L e₁ * L e₂) → [] ∈ L e₂ :=
+  λ H ↦ eps_in_concat_eps_in_both e₁ e₂ H |>.2
 
 
 /-
@@ -366,11 +374,9 @@ lemma δ₂: [] ∈ L (δ r) → [] ∈ (L r) := by {
     simp [L] at *
     apply eps_in_each_eps_in_both
     . apply ihe₁
-      apply (eps_in_both_eps_in_e₁ _ (δ e₂))
-      exact H
+      exact (eps_in_concat_eps_in_both (δ e₁) (δ e₂) H) |>.1
     . apply ihe₂
-      apply (eps_in_both_eps_in_e₂ (δ e₁) _)
-      exact H
+      exact (eps_in_concat_eps_in_both (δ e₁) (δ e₂) H) |>.2
   | union e₁ e₂ ihe₁ ihe₂ =>
     intro H
     simp [L] at *

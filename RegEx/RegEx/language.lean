@@ -60,6 +60,21 @@ lemma nil_append_word: ∀ w: Word 𝒜, ([]: Word 𝒜) ++ w = w := by {
   apply List.nil_append w
 }
 
+lemma nil_append_nil (w₁ w₂: Word 𝒜): w₁ ++ w₂ = [] ↔ w₁ = [] ∧ w₂ = [] := by {
+  constructor
+  . intro H
+    cases w₁ with
+    | nil =>
+      rw [nil_append_word] at H
+      simp [H]
+    | cons h t =>
+      exfalso
+      contradiction
+  . intro H
+    rw [H.left, H.right]
+    rfl
+}
+
 lemma word_append_assoc: ∀ w₁ w₂ w₃: Word 𝒜, w₁ ++ w₂ ++ w₃ = w₁ ++ (w₂ ++ w₃) := by {
   intros w₁ w₂ w₃
   apply List.append_assoc
