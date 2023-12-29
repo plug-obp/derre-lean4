@@ -223,7 +223,7 @@ lemma union_empty: ∀ r: Regex 𝒜, L (r ⋃ Φ) = L r := by {
 }
 
 @[simp]
-lemma union_empty': ∀ r: Regex 𝒜, L (Φ ⋃ r) = L r := by {
+lemma empty_union: ∀ r: Regex 𝒜, L (Φ ⋃ r) = L r := by {
   intro r
   rw [union_comm]
   apply union_empty

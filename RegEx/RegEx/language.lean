@@ -49,13 +49,13 @@ instance: HAppend (List 𝒜) (Word 𝒜) (Word 𝒜) := ⟨ List.append ⟩
   Lift some list lemmas to words
 -/
 @[simp]
-lemma word_append_nil: ∀ w: Word 𝒜, w ++ ([]: List 𝒜) = w := by {
+lemma word_append_nil: ∀ w: Word 𝒜, w ++ ([]: Word 𝒜) = w := by {
   intro w
   apply List.append_nil w
 }
 
 @[simp]
-lemma nil_append_word: ∀ w: Word 𝒜, ([]: List 𝒜) ++ w = w := by {
+lemma nil_append_word: ∀ w: Word 𝒜, ([]: Word 𝒜) ++ w = w := by {
   intro w
   apply List.nil_append w
 }
@@ -111,7 +111,7 @@ instance Language.mul: Mul (Language 𝒜) := ⟨ concatenationL ⟩
 theorem zero_def : (0 : Language α) = (∅ : Set _) :=
   rfl
 
-theorem one_def : (1 : Language α) = ({[]} : Set (List α)) :=
+theorem one_def : (1 : Language α) = ({[]} : Set (Word α)) :=
   rfl
 
 theorem add_def (l m : Language α) : l + m = (l ∪ m : Set (List α)) :=
@@ -121,11 +121,11 @@ theorem mul_def (l m : Language α) : l * m = Set.image2 (· ++ ·) l m :=
   rfl
 
 @[simp]
-theorem not_mem_zero (x : List α) : x ∉ (0 : Language α) :=
+theorem not_mem_zero (x : Word α) : x ∉ (0 : Language α) :=
   id
 
 @[simp]
-theorem mem_one (x : List α) : x ∈ (1 : Language α) ↔ x = [] := by rfl
+theorem mem_one (x : Word α) : x ∈ (1 : Language α) ↔ x = [] := by rfl
 
 instance Language.toSemiring : Semiring (Language 𝒜) where
   add := (· + ·)
