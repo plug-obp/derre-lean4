@@ -48,7 +48,7 @@ lemma words_in_L_ε (w: Word 𝒜): w ∈ ℒ ε ↔ w = [] := by {
   exact Iff.rfl
 }
 
-lemma eps_denotation: @ℒ 𝒜 ε = 1 := by {
+lemma eps_denotes: @ℒ 𝒜 ε = 1 := by {
   simp [ℒ]
   rfl
 }
@@ -60,37 +60,30 @@ Equalities
 -/
 
 @[simp]
-lemma L_empty: ℒ (Φ: Regex 𝒜) = ∅ := by {
-  simp [ℒ]
-}
+lemma empty_denotes: ℒ (Φ: Regex 𝒜) = ∅ := rfl
 
 @[simp]
-lemma L_token: ∀ c: 𝒜, ℒ (τ c) = {[c]} := by {
-  simp [ℒ]
-}
+lemma token_denotes: ∀ c: 𝒜, ℒ (τ c) = {[c]} := λ _ => rfl
 
 @[simp]
-lemma L_union: ∀ e₁ e₂: Regex 𝒜, ℒ (e₁ ⋃ e₂) = ℒ e₁ ∪ ℒ e₂ := by {
-  simp [ℒ]
-}
-
-lemma L_concatenation: ∀ e₁ e₂: Regex 𝒜, ℒ (e₁ ⋅ e₂) = { w | w ∈ ℒ e₁ * ℒ e₂} := by {
-  simp [ℒ]
-}
-
-lemma L_star: ∀ e: Regex 𝒜, ℒ (e★) = { w | w ∈ (ℒ e)∗ } := by {
-  simp [ℒ]
-}
+lemma union_denotes: ∀ e₁ e₂: Regex 𝒜, ℒ (e₁ ⋃ e₂) = ℒ e₁ ∪ ℒ e₂ := λ _ _ => rfl
 
 @[simp]
-lemma Lε_star: @ℒ 𝒜 (ε★) = Lε := by {
-  simp [ℒ]
-}
+lemma concatenation_denotes: ∀ e₁ e₂: Regex 𝒜, ℒ (e₁ ⋅ e₂) = ℒ e₁ * ℒ e₂ := λ _ _ => rfl
+
+@[simp]
+lemma pow_denotes: ∀ e: Regex 𝒜, ℒ e^n = (ℒ e)^n := λ _ => rfl
+
+@[simp]
+lemma star_denotes: ∀ e: Regex 𝒜, ℒ (e★) = (ℒ e)∗ := λ _ => rfl
+
+@[simp]
+lemma eps_star_denotes: @ℒ 𝒜 (ε★) = Lε := by simp [ℒ]
 
 @[simp]
 lemma re_ε_concatenation: ∀ e: Regex 𝒜, ℒ (ε ⋅ e) = ℒ e := by {
   simp [ℒ]
-  intro e
+  intro _
   apply one_mul
 }
 

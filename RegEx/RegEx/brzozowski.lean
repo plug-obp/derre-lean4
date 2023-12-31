@@ -158,7 +158,7 @@ lemma δ_holds(r: Regex 𝒜): [] ∈ ℒ r → [] ∈ ℒ (δ r) := by {
     contradiction
   | concatenation e₁ e₂ ihe₁ ihe₂ =>
     intro H
-    simp [δ_concatenation, L_concatenation] at *
+    simp [δ_concatenation] at *
     exists []
     exists []
     constructor
