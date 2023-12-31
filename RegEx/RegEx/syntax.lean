@@ -12,13 +12,17 @@ variable
   A regular expression is a symbolic representation of a set of strings.
   The set of strings represented by a regular expression 𝓇 is denoted by ℒ(𝓇).
   The set of all regular expressions over an alphabet 𝒜 is denoted by ℛ(𝒜).
+
+  - ε can be derived by: ε = Φ★
+  - e^n can be obtained with ε and concatenation, from the monoid M(𝒜, ++, ε)
 -/
 inductive Regex 𝒜 :=
 | empty
+-- | epsilon                      -- ε can be derived by: ε = Φ★
 | token         (c: 𝒜)
 | concatenation (e₁ e₂ : Regex 𝒜)
 | union         (e₁ e₂ : Regex 𝒜)
-| star          (e : Regex 𝒜)
+| star          (e     : Regex 𝒜)
 deriving DecidableEq, Inhabited
 
 instance: EmptyCollection (Regex 𝒜) := ⟨ .empty ⟩
