@@ -25,12 +25,12 @@ inductive star (l: Language 𝒜) : Language 𝒜
 /--!
   # The denotational semantics of a regex is a language
 -/
-def L: Regex 𝒜 → Language 𝒜
+def ℒ: Regex 𝒜 → Language 𝒜
 | Φ       => ∅
 | τ c     => { [c] }
-| e₁ ⋅ e₂ => { w | w ∈ (L e₁) * (L e₂)}
-| e₁ ⋃ e₂ => L e₁ ∪ L e₂
-| e★      => { w | w ∈ (L e)∗ }
+| 𝓇₁ ⋅ 𝓇₂ => (ℒ 𝓇₁) * (ℒ 𝓇₂)
+| 𝓇₁ ⋃ 𝓇₂ => ℒ 𝓇₁ ∪ ℒ 𝓇₂
+| 𝓇★      => (ℒ 𝓇)∗
 
 -- lemma star_emptyL: star ∅ w → w = [] := by {
 --   intro H
@@ -43,13 +43,13 @@ def L: Regex 𝒜 → Language 𝒜
 
 
 -- ε represents the language consisting only of the empty word.
-lemma words_in_L_ε (w: Word 𝒜): w ∈ L ε ↔ w = [] := by {
-  simp [L, Lε]
+lemma words_in_L_ε (w: Word 𝒜): w ∈ ℒ ε ↔ w = [] := by {
+  simp [ℒ, Lε]
   exact Iff.rfl
 }
 
-lemma eps_denotation: @L 𝒜 ε = 1 := by {
-  simp [L]
+lemma eps_denotation: @ℒ 𝒜 ε = 1 := by {
+  simp [ℒ]
   rfl
 }
 
@@ -60,74 +60,74 @@ Equalities
 -/
 
 @[simp]
-lemma L_empty: L (Φ: Regex 𝒜) = ∅ := by {
-  simp [L]
+lemma L_empty: ℒ (Φ: Regex 𝒜) = ∅ := by {
+  simp [ℒ]
 }
 
 @[simp]
-lemma L_token: ∀ c: 𝒜, L (τ c) = {[c]} := by {
-  simp [L]
+lemma L_token: ∀ c: 𝒜, ℒ (τ c) = {[c]} := by {
+  simp [ℒ]
 }
 
 @[simp]
-lemma L_union: ∀ e₁ e₂: Regex 𝒜, L (e₁ ⋃ e₂) = L e₁ ∪ L e₂ := by {
-  simp [L]
+lemma L_union: ∀ e₁ e₂: Regex 𝒜, ℒ (e₁ ⋃ e₂) = ℒ e₁ ∪ ℒ e₂ := by {
+  simp [ℒ]
 }
 
-lemma L_concatenation: ∀ e₁ e₂: Regex 𝒜, L (e₁ ⋅ e₂) = { w | w ∈ L e₁ * L e₂} := by {
-  simp [L]
+lemma L_concatenation: ∀ e₁ e₂: Regex 𝒜, ℒ (e₁ ⋅ e₂) = { w | w ∈ ℒ e₁ * ℒ e₂} := by {
+  simp [ℒ]
 }
 
-lemma L_star: ∀ e: Regex 𝒜, L (e★) = { w | w ∈ (L e)∗ } := by {
-  simp [L]
-}
-
-@[simp]
-lemma Lε_star: @L 𝒜 (ε★) = Lε := by {
-  simp [L]
+lemma L_star: ∀ e: Regex 𝒜, ℒ (e★) = { w | w ∈ (ℒ e)∗ } := by {
+  simp [ℒ]
 }
 
 @[simp]
-lemma re_ε_concatenation: ∀ e: Regex 𝒜, L (ε ⋅ e) = L e := by {
-  simp [L]
+lemma Lε_star: @ℒ 𝒜 (ε★) = Lε := by {
+  simp [ℒ]
+}
+
+@[simp]
+lemma re_ε_concatenation: ∀ e: Regex 𝒜, ℒ (ε ⋅ e) = ℒ e := by {
+  simp [ℒ]
   intro e
   apply one_mul
 }
 
 @[simp]
-lemma re_concatenation_ε: ∀ e: Regex 𝒜, L (e ⋅ ε) = L e := by {
-  simp [L]
+lemma re_concatenation_ε: ∀ e: Regex 𝒜, ℒ (e ⋅ ε) = ℒ e := by {
+  simp [ℒ]
   intro e
   apply mul_one
 }
 
 @[simp]
-lemma Φ_concatenation: ∀ e: Regex 𝒜, L (Φ ⋅ e) = ∅ := by {
-  simp [L]
+lemma Φ_concatenation: ∀ e: Regex 𝒜, ℒ (Φ ⋅ e) = ∅ := by {
+  simp [ℒ]
   intro e
   apply zero_mul
 }
 
 @[simp]
-lemma concatenation_Φ: ∀ e: Regex 𝒜, L (e ⋅ Φ) = ∅ := by {
-  simp [L]
+lemma concatenation_Φ: ∀ e: Regex 𝒜, ℒ (e ⋅ Φ) = ∅ := by {
+  simp [ℒ]
   intro e
   apply mul_zero
 }
 
-lemma concatenation_assoc: ∀ e₁ e₂ e₃: Regex 𝒜, L ((e₁ ⋅ e₂) ⋅ e₃) = L (e₁ ⋅ (e₂ ⋅ e₃)) := by {
-  simp [L]
+lemma concatenation_assoc: ∀ e₁ e₂ e₃: Regex 𝒜, ℒ ((e₁ ⋅ e₂) ⋅ e₃) = ℒ (e₁ ⋅ (e₂ ⋅ e₃)) := by {
+  simp [ℒ]
   intros e₁ e₂ e₃
   apply mul_assoc
 }
 
 @[simp]
-lemma empty_union_e: ∀ e: Regex 𝒜, L (Φ ⋃ e) = L e := by {
+lemma empty_union_e: ∀ e: Regex 𝒜, ℒ (Φ ⋃ e) = ℒ e := by {
   intro e
   apply funext
   intro w
   apply propext
-  simp [L]
+  simp [ℒ]
   constructor
   . intro H
     cases H with
@@ -139,7 +139,7 @@ lemma empty_union_e: ∀ e: Regex 𝒜, L (Φ ⋃ e) = L e := by {
 }
 
 @[simp]
-lemma union_idempotent: ∀ e: Regex 𝒜, L (e ⋃ e) = L e := by {
+lemma union_idempotent: ∀ e: Regex 𝒜, ℒ (e ⋃ e) = ℒ e := by {
   intro e
   apply funext
   intro w
@@ -155,12 +155,12 @@ lemma union_idempotent: ∀ e: Regex 𝒜, L (e ⋃ e) = L e := by {
     exact H
 }
 
-lemma union_comm: ∀ r₁ r₂: Regex 𝒜, L (r₁ ⋃ r₂) = L (r₂ ⋃ r₁) := by {
+lemma union_comm: ∀ r₁ r₂: Regex 𝒜, ℒ (r₁ ⋃ r₂) = ℒ (r₂ ⋃ r₁) := by {
   intros r₁ r₂
   apply funext
   intro w
   apply propext
-  simp [L]
+  simp [ℒ]
   constructor
   . intro H
     cases H with
@@ -172,19 +172,19 @@ lemma union_comm: ∀ r₁ r₂: Regex 𝒜, L (r₁ ⋃ r₂) = L (r₂ ⋃ r�
     | inr Hr => apply Or.inl; exact Hr
 }
 
-lemma union_assoc: ∀ r₁ r₂ r₃: Regex 𝒜, L ((r₁ ⋃ r₂) ⋃ r₃) = L (r₁ ⋃ (r₂ ⋃ r₃)) := by {
-  simp [L]
+lemma union_assoc: ∀ r₁ r₂ r₃: Regex 𝒜, ℒ ((r₁ ⋃ r₂) ⋃ r₃) = ℒ (r₁ ⋃ (r₂ ⋃ r₃)) := by {
+  simp [ℒ]
   intros r₁ r₂ r₃
   apply add_assoc
 }
 
 @[simp]
-lemma union_empty: ∀ r: Regex 𝒜, L (r ⋃ Φ) = L r := by {
+lemma union_empty: ∀ r: Regex 𝒜, ℒ (r ⋃ Φ) = ℒ r := by {
   intro r
   apply funext
   intro w
   apply propext
-  simp [L]
+  simp [ℒ]
   constructor
   . intro H
     cases H with
@@ -196,32 +196,32 @@ lemma union_empty: ∀ r: Regex 𝒜, L (r ⋃ Φ) = L r := by {
 }
 
 @[simp]
-lemma empty_union: ∀ r: Regex 𝒜, L (Φ ⋃ r) = L r := by {
+lemma empty_union: ∀ r: Regex 𝒜, ℒ (Φ ⋃ r) = ℒ r := by {
   intro r
   rw [union_comm]
   apply union_empty
 }
 
 @[simp]
-lemma ε_mem_star: ∀ e: Regex 𝒜, [] ∈ L (e★) := by {
+lemma ε_mem_star: ∀ e: Regex 𝒜, [] ∈ ℒ (e★) := by {
   intro e
-  simp [L]
+  simp [ℒ]
   exists 0
 }
 
 @[simp]
-lemma star_star: ∀ e: Regex 𝒜, L (e★★) = L (e★) := by {
-  simp [L]
+lemma star_star: ∀ e: Regex 𝒜, ℒ (e★★) = ℒ (e★) := by {
+  simp [ℒ]
 }
 
-lemma eps_in_each_eps_in_concat (e₁ e₂: Regex 𝒜): [] ∈ L e₁ → [] ∈ L e₂ → [] ∈ L (e₁ ⋅ e₂) := by {
+lemma eps_in_each_eps_in_concat (e₁ e₂: Regex 𝒜): [] ∈ ℒ e₁ → [] ∈ ℒ e₂ → [] ∈ ℒ (e₁ ⋅ e₂) := by {
   intros h₁ h₂
-  simp [L]
+  simp [ℒ]
   exists []
   exists []
 }
 
-lemma eps_in_concat_eps_in_both (e₁ e₂: Regex 𝒜): [] ∈ (L e₁ * L e₂) → ([] ∈ L e₁ ∧ [] ∈ L e₂) := by {
+lemma eps_in_concat_eps_in_both (e₁ e₂: Regex 𝒜): [] ∈ (ℒ e₁ * ℒ e₂) → ([] ∈ ℒ e₁ ∧ [] ∈ ℒ e₂) := by {
   intro H
   let ⟨_, _, hx, hy, hxy⟩ := H
   simp [*] at *
@@ -231,10 +231,10 @@ lemma eps_in_concat_eps_in_both (e₁ e₂: Regex 𝒜): [] ∈ (L e₁ * L e₂
   exact ⟨hx, hy⟩
 }
 
-lemma eps_in_both_eps_in_e₁ (e₁ e₂: Regex 𝒜): [] ∈ (L e₁ * L e₂) → [] ∈ L e₁ :=
+lemma eps_in_both_eps_in_e₁ (e₁ e₂: Regex 𝒜): [] ∈ (ℒ e₁ * ℒ e₂) → [] ∈ ℒ e₁ :=
   λ H ↦ eps_in_concat_eps_in_both e₁ e₂ H |>.1
 
-lemma eps_in_both_eps_in_e₂ (e₁ e₂: Regex 𝒜): [] ∈ (L e₁ * L e₂) → [] ∈ L e₂ :=
+lemma eps_in_both_eps_in_e₂ (e₁ e₂: Regex 𝒜): [] ∈ (ℒ e₁ * ℒ e₂) → [] ∈ ℒ e₂ :=
   λ H ↦ eps_in_concat_eps_in_both e₁ e₂ H |>.2
 
 

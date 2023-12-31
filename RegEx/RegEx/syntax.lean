@@ -7,7 +7,7 @@ variable
 /-!
   # Regular Expressions
   A regular expression is a symbolic representation of a set of strings.
-  The set of strings represented by a regular expression 𝓇 is denoted by L(𝓇).
+  The set of strings represented by a regular expression 𝓇 is denoted by ℒ(𝓇).
   The set of all regular expressions over an alphabet 𝒜 is denoted by ℛ(𝒜).
 -/
 inductive Regex 𝒜 :=
