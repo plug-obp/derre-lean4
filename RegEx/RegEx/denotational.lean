@@ -72,7 +72,12 @@ lemma union_denotes: ∀ e₁ e₂: Regex 𝒜, ℒ (e₁ ⋃ e₂) = ℒ e₁ �
 lemma concatenation_denotes: ∀ e₁ e₂: Regex 𝒜, ℒ (e₁ ⋅ e₂) = ℒ e₁ * ℒ e₂ := λ _ _ => rfl
 
 @[simp]
-lemma pow_denotes: ∀ e: Regex 𝒜, ℒ e^n = (ℒ e)^n := λ _ => rfl
+lemma pow_denotes: ∀ e: Regex 𝒜, ℒ (e^n) = (ℒ e)^n := by {
+  intro e
+  induction n with
+  | zero => simp [ℒ]; rfl
+  | succ n ih => simp [ℒ]; rw [←ih]; rfl
+}
 
 @[simp]
 lemma star_denotes: ∀ e: Regex 𝒜, ℒ (e★) = (ℒ e)∗ := λ _ => rfl
@@ -229,9 +234,3 @@ lemma eps_in_both_eps_in_e₁ (e₁ e₂: Regex 𝒜): [] ∈ (ℒ e₁ * ℒ e�
 
 lemma eps_in_both_eps_in_e₂ (e₁ e₂: Regex 𝒜): [] ∈ (ℒ e₁ * ℒ e₂) → [] ∈ ℒ e₂ :=
   λ H ↦ eps_in_concat_eps_in_both e₁ e₂ H |>.2
-
-
-instance: HAdd (Regex 𝒜) (Regex 𝒜) (Regex 𝒜) := ⟨ Regex.union ⟩
-instance: Zero (Regex 𝒜) := ⟨Regex.empty⟩
-instance: One (Regex 𝒜) := ⟨ε⟩
-instance: HMul (Regex 𝒜) (Regex 𝒜) (Regex 𝒜) := ⟨ Regex.concatenation ⟩

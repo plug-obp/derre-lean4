@@ -228,6 +228,7 @@ This operation comes from free from the Monoid instance induced by the Semiring 
 @[simp]
 lemma powL_zero (L: Language 𝒜): L ^ 0 = 1 := rfl
 
+@[simp]
 lemma powL_n (L: Language 𝒜): L ^ (n+1) = L * (L ^ n) := by apply pow_succ
 
 @[simp]

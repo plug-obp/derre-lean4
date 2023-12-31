@@ -1,3 +1,6 @@
+import Mathlib.Init.ZeroOne         -- for 0 and 1
+import Mathlib.Algebra.Group.Defs   -- for pow
+import Mathlib.Algebra.Order.Kleene -- for star
 import Mathlib.Tactic.Basic --for Type*
 
 -- The 𝒜lphabet
@@ -30,3 +33,10 @@ postfix:65   "★"    => Regex.star
 
 -- ε is a derived regex that matches only the empty string
 def ε: Regex 𝒜 := .star .empty
+
+instance: Add (Regex 𝒜)   := ⟨ Regex.union ⟩
+instance: Zero (Regex 𝒜)  := ⟨ Regex.empty ⟩
+instance: One (Regex 𝒜)   := ⟨ ε ⟩
+instance: Mul (Regex 𝒜)   := ⟨ Regex.concatenation ⟩
+instance: Pow (Regex 𝒜) ℕ := ⟨ λ e n => npowRec n e ⟩
+instance: KStar (Regex 𝒜) := ⟨ Regex.star ⟩
