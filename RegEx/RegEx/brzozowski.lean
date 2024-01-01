@@ -272,7 +272,7 @@ lemma delta_eq_hasEmpty(e: Regex 𝒜):  ℒ (δ e) = hasEmpty? (ℒ e) := by {
       exact H
     . intro H
       exfalso
-      let ⟨ hl, hr ⟩ := H
+      let ⟨ hl, _ ⟩ := H
       exact hl
   | token t =>
     simp [δ, ℒ, hasEmpty?]
@@ -283,16 +283,14 @@ lemma delta_eq_hasEmpty(e: Regex 𝒜):  ℒ (δ e) = hasEmpty? (ℒ e) := by {
       rw [hl] at hr
       contradiction
   | concatenation e₁ e₂ ihe₁ ihe₂ =>
-    simp [δ, ℒ, hasEmpty?] at *
+    simp [δ, ℒ, hasEmpty?_concat] at *
     rw [ihe₁, ihe₂]
-    sorry
   | union e₁ e₂ ihe₁ ihe₂ =>
-    simp [δ, ℒ, hasEmpty?] at *
+    simp [δ, ℒ, hasEmpty?_union] at *
     rw [ihe₁, ihe₂]
-    sorry
-  | star e ihe =>
-    simp [δ, ℒ, hasEmpty?] at *
-    sorry
+  | star e _ =>
+    simp [δ, ℒ, hasEmpty?_star] at *
+    rfl
 }
 
 theorem LD_imp_DL_concat {c:𝒜} {w: Word 𝒜}
@@ -397,8 +395,7 @@ theorem LD_eq_DL (c: 𝒜) (r: Regex 𝒜): ℒ (𝒟 c r) = 𝒟 c (ℒ r) := b
     split <;> simp
   | concatenation e₁ e₂ ihe₁ ihe₂ =>
     simp [ℒ, D]
-    simp [DerL_concat]
-    rw [←delta_eq_hasEmpty]
+    simp [DerL_concat, ←delta_eq_hasEmpty]
     rw [←ihe₁, ←ihe₂]
     rfl
   | union e₁ e₂ ihe₁ ihe₂ =>

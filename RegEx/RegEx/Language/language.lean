@@ -3,6 +3,7 @@
 -- import Mathlib.Data.Set.NAry
 -- import Mathlib.Data.Set.Lattice
 -- import Mathlib.Algebra.Ring.Basic
+import Mathlib.Algebra.Group.Basic
 import Mathlib.Algebra.GroupPower.Ring
 import Mathlib.Algebra.Order.Kleene
 import Mathlib.Tactic.Ring
@@ -248,6 +249,7 @@ postfix:1024 "∗" => KStar.kstar
 lemma kleene_closure_def(L: Language 𝒜): L∗ = { w | ∃ n: ℕ, w ∈ (L ^ n)} := rfl
 
 lemma one_in_l_star: ∀ L: Language 𝒜, 1 ⊆ L∗ := λ L w hw ↦ by { exists 0 }
+lemma eps_in_star: ∀ L: Language 𝒜, [] ∈ L∗ := λ _ ↦ by { exists 0 }
 
 theorem mem_iSup {ι : Sort v} {s : ι → Language 𝒜} {x: Word 𝒜} : (x ∈ ⨆ i, s i) ↔ ∃ i, x ∈ s i :=
   Set.mem_iUnion
@@ -387,26 +389,7 @@ lemma word_inε_is_ε (w: Word 𝒜): w ∈ (1: Language 𝒜) ↔ w = [] := by 
     rfl
 }
 
-lemma one_mul_one: ∀ L: Language 𝒜, 1 * L = 1 ↔ L = 1 := by {
-  intro L
-  constructor
-  . intro H
-    rw [← H]
-    rw [ε_concatenation]
-  . intro H
-    rw [H]
-    simp
-}
-
-lemma mul_has_one: ∀ L₁ L₂: Language 𝒜, L₁ * L₂ = L₁ ↔ L₂ = 1 := by {
-  intros L₁ L₂
-  constructor
-  . intro H
-    sorry
-  . intro H
-    rw [H]
-    simp
-}
+lemma L_one_mul: ∀ L: Language 𝒜, 1 * L = 1 ↔ L = 1 := by simp [one_mul]
 
 lemma append_nil_iff_both_nil: ∀ s₁ s₂: Word 𝒜, s₁ ++ s₂ = [] ↔ s₁ = [] ∧ s₂ = [] := by {
   intros s₁ s₂
@@ -425,14 +408,10 @@ lemma append_nil_iff_both_nil: ∀ s₁ s₂: Word 𝒜, s₁ ++ s₂ = [] ↔ s
 }
 
 @[simp]
-lemma one_mul_one': ∀ L₁ L₂: Language 𝒜, L₁ * L₂ = 1 ↔ L₁ = 1 ∧ L₂ = 1 := by {
-  intros L₁ L₂
-  constructor
-  . intro H
-    sorry
-  . intro H
-    rw [H.left, H.right]
-    apply ε_concatenation
+lemma one_mul_one: ∀ L₁ L₂: Language 𝒜, (L₁ * L₂ = 1) → (L₁ = 1 ↔ L₂ = 1) := by {
+  intros L₁ L₂ H
+  apply eq_one_iff_eq_one_of_mul_eq_one
+  exact H
 }
 
 lemma ε_pow: ∀ n: ℕ, (Lε: Language 𝒜) ^ n = Lε := by apply one_pow

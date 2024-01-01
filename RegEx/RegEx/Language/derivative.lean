@@ -113,16 +113,28 @@ lemma hasEmpty?_concat (L₁ L₂: Language 𝒜): hasEmpty? (L₁ * L₂) = (ha
 }
 
 lemma hasEmpty?_union (L₁ L₂: Language 𝒜): hasEmpty? (L₁ + L₂) = (hasEmpty? L₁ + hasEmpty? L₂) := by {
-  simp [hasEmpty?_def]
   ext w
   constructor
-  . intro H
-    simp [*] at *
-    let ⟨ left, we ⟩ := H
-    sorry
-  . intro H
-    simp [*] at *
-    sorry
+  . rintro ⟨ ⟨ l ⟩ | ⟨ r ⟩  , we ⟩
+    . left
+      simp [hasEmpty?_def, *] at *
+      exact l
+    . right
+      simp [hasEmpty?_def, *] at *
+      exact r
+  . rintro  (⟨h₁, h₂⟩ | ⟨h₁, h₂⟩)
+    . simp [hasEmpty?_def, *] at *
+      simp [add_def, Set.union_def, Set.mem_def]
+      constructor
+      . left
+        exact h₁
+      . rfl
+    . simp [hasEmpty?_def, *] at *
+      simp [add_def, Set.union_def, Set.mem_def]
+      constructor
+      . right
+        exact h₁
+      .rfl
 }
 
 lemma hasEmpty?_star (L: Language 𝒜): hasEmpty? (L∗) = (1: Language 𝒜) := by {
@@ -145,7 +157,8 @@ lemma hasEmpty?_star (L: Language 𝒜): hasEmpty? (L∗) = (1: Language 𝒜) :
 lemma hasEmpty?_empty_in (L: Language 𝒜): hasEmpty? L = 1 ↔ [] ∈ L := by {
   simp [hasEmpty?_def, one_def]
   constructor
-  . intro H
+  . intro h
+    simp [*] at *
     sorry
   . intro H
     ext w
@@ -163,25 +176,79 @@ lemma hasEmpty?_empty_in (L: Language 𝒜): hasEmpty? L = 1 ↔ [] ∈ L := by 
 }
 
 lemma der_concat_l₁ (c: 𝒜) (L₁ L₂: Language 𝒜) : [] ∈ L₁ → 𝒟 c (L₁ * L₂) = ((𝒟 c L₁) * L₂) + (𝒟 c L₂) := by {
-  sorry
+  intro hL₁
+  ext w
+  constructor
+  . rintro ⟨ w₁, ⟨ w₂, ⟨ hw₁, hw₂, hw ⟩  ⟩  ⟩
+    dsimp [] at *
+    dsimp [DerL_def, mul_def, Set.image2]
+    sorry
+  . sorry
 }
 
 lemma der_concat_l₂ (c: 𝒜) (L₁ L₂: Language 𝒜) : [] ∉ L₁ → 𝒟 c (L₁ * L₂) = (𝒟 c L₁) * L₂ := by {
-  sorry
+  intro hL₁
+  ext w
+  constructor
+  . rintro ⟨ w₁, ⟨ w₂, ⟨ hw₁, hw₂, hw ⟩  ⟩  ⟩
+    dsimp [] at *
+    dsimp [DerL_def, mul_def, Set.image2]
+    exists w
+    exists w₂
+    simp [*] at *
+
+    sorry
+  . sorry
 }
 
 lemma DerL_concat (c: 𝒜) (L₁ L₂: Language 𝒜) : 𝒟 c (L₁ * L₂) = (𝒟 c L₁) * L₂ + (hasEmpty? L₁ * 𝒟 c L₂) := by {
-  sorry
+  ext w₁
+  constructor
+  . sorry
+  . sorry
 }
 
 lemma DerL_union (c: 𝒜) (L₁ L₂: Language 𝒜) : 𝒟 c (L₁ + L₂) = 𝒟 c L₁ + 𝒟 c L₂ := by {
   ext w₁
   simp [DerL_def]
-  sorry
+  constructor
+  . rintro (H₁ | H₂)
+    . left
+      exact H₁
+    . right
+      exact H₂
+  . intro H
+    cases H
+    . left
+      next H₁ => exact H₁
+    . right
+      next H₂ => exact H₂
 }
 
-lemma DerL_star (c: 𝒜) (L: Language 𝒜) : 𝒟 c (L∗) = 𝒟 c L * L∗ := by {
-  ext w₁
-  simp [DerL_def]
-  sorry
+lemma DerL_star (c: 𝒜) (L: Language 𝒜) : 𝒟 c (L∗) = (𝒟 c L) * (L∗) := by {
+  ext ww
+  constructor
+  . intro H
+    induction ww with
+    | nil =>
+      simp [DerL_def, Lε, mul_def, Set.image2] at *
+      let ⟨ n, hS ⟩ := H
+      exists []
+      constructor
+      . exfalso
+        induction n with
+        | zero =>
+          simp [DerL_def, Lε] at hS
+        | succ n ih =>
+          simp [powL_n] at hS
+          apply ih
+          let ⟨ w₁, w₂, hw₁, hw₂, hw ⟩ := hS
+          simp [] at *
+          sorry
+      . exists []
+        constructor
+        . apply eps_in_star
+        . rfl
+    | cons h t ihe => sorry
+  . sorry
 }
