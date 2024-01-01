@@ -98,6 +98,19 @@ lemma word_append_assoc: ∀ w₁ w₂ w₃: Word 𝒜, w₁ ++ w₂ ++ w₃ = w
   apply List.append_assoc
 }
 
+lemma Word.cons_append.{u} {α : Type u} (a : α) (as bs : Word α) : a :: as ++ bs = a :: (as ++ bs) := List.cons_append a as bs
+
+lemma Word.cons_inj(a : 𝒜) {l l' : Word 𝒜} : a :: l = a :: l' ↔ l = l' := List.cons_inj a
+
+lemma Word.cons_eq_cons_iff(h₁ h₂ : 𝒜) {t₁ t₂ : Word 𝒜}: h₁ :: t₁ = h₂ :: t₂ ↔ h₁ = h₂ ∧ t₁ = t₂ := by {
+  constructor
+  . intro H
+    injection H with Hh Ht
+    exact ⟨Hh, Ht⟩
+  . intro H
+    rw [H.left, H.right]
+}
+
 /-!
 A language is a set of words over an alphabet 𝒜.
 As usual a set is a T → Prop, so in our case  (Word 𝒜) → Prop

@@ -155,12 +155,12 @@ lemma hasEmpty?_star (L: Language 𝒜): hasEmpty? (L∗) = (1: Language 𝒜) :
 
 
 lemma hasEmpty?_empty_in (L: Language 𝒜): hasEmpty? L = 1 ↔ [] ∈ L := by {
-  simp [hasEmpty?_def, one_def]
   constructor
   . intro h
-    simp [*] at *
+    simp [hasEmpty?_def, one_def] at *
     sorry
   . intro H
+    simp [hasEmpty?_def, one_def]
     ext w
     constructor
     . intro hw
@@ -177,12 +177,25 @@ lemma hasEmpty?_empty_in (L: Language 𝒜): hasEmpty? L = 1 ↔ [] ∈ L := by 
 
 lemma der_concat_l₁ (c: 𝒜) (L₁ L₂: Language 𝒜) : [] ∈ L₁ → 𝒟 c (L₁ * L₂) = ((𝒟 c L₁) * L₂) + (𝒟 c L₂) := by {
   intro hL₁
-  ext w
+  ext wx
   constructor
   . rintro ⟨ w₁, ⟨ w₂, ⟨ hw₁, hw₂, hw ⟩  ⟩  ⟩
     dsimp [] at *
-    dsimp [DerL_def, mul_def, Set.image2]
-    sorry
+    induction w₁ with
+    | nil =>
+      right
+      rw [nil_append_word] at hw
+      rw [hw] at hw₂
+      exact hw₂
+    | cons h t ihe =>
+      left
+      exists t
+      exists w₂
+      rw [Word.cons_append] at *
+      rw [Word.cons_eq_cons_iff] at hw
+      let ⟨ hc, ht ⟩ := hw
+      simp [*] at *
+      exact hw₁
   . sorry
 }
 
