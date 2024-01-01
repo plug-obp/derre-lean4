@@ -84,9 +84,8 @@ lemma δ₁: ∀ w: Word 𝒜, w ∈ ℒ (δ r) → w = [] := by {
       exact h
   | star e _ =>
     simp [δ]
-    intros w h
-    rw [←words_in_L_ε]
-    exact h
+    intros _ h
+    apply h
 }
 
 /-
@@ -214,7 +213,7 @@ def D (c: 𝒜): Regex 𝒜 → Regex 𝒜
 | τ t => if c = t then ε else Φ
 | e₁ ⋅ e₂ => (D c e₁ ⋅ e₂) ⋃ (δ e₁ ⋅ D c e₂)
 | e₁ ⋃ e₂ => D c e₁ ⋃ D c e₂
-| e★ => D c e ⋅ e★
+| e★ => (D c e) ⋅ (e★)
 
 instance: Derivative 𝒜 (Regex 𝒜):= ⟨D⟩
 
@@ -224,12 +223,18 @@ lemma D_empty: ∀ c: 𝒜, 𝒟 c (Φ: Regex 𝒜) = Φ := λ _ => rfl
 @[simp]
 lemma D_token: ∀ c: 𝒜, ∀ t: 𝒜, 𝒟 c (τ t) = if c = t then ε else Φ := λ _ _ => rfl
 
+@[simp]
 lemma D_concatenation: ∀ c: 𝒜, ∀ e₁ e₂: Regex 𝒜,
   𝒟 c (e₁ ⋅ e₂) = (𝒟 c e₁ ⋅ e₂) ⋃ (δ e₁ ⋅ 𝒟 c e₂) := λ _ _ _ => rfl
 
+@[simp]
 lemma D_union: ∀ c: 𝒜, ∀ e₁ e₂: Regex 𝒜, 𝒟 c (e₁ ⋃ e₂) = 𝒟 c e₁ ⋃ 𝒟 c e₂ := λ _ _ _ => rfl
 
-lemma D_star: ∀ c: 𝒜, ∀ e: Regex 𝒜, 𝒟 c (e★) = 𝒟 c e ⋅ e★ := λ _ _ => rfl
+@[simp]
+lemma D_star: ∀ c: 𝒜, ∀ e: Regex 𝒜, 𝒟 c (e★) = (𝒟 c e) ⋅ (e★) := λ _ _ => rfl
+
+@[simp]
+lemma D_eps: ∀ (c: 𝒜), 𝒟 c ε = (Φ: Regex 𝒜)⋅(Φ★) := λ _ => rfl
 
 /-
  The correctness theorem has the form that
@@ -256,10 +261,48 @@ theorem LD_imp_DL_token: ∀ (c: 𝒜) (w: Word 𝒜), w ∈ ℒ (𝒟 c (τ t))
     exact Hw
 }
 
+lemma delta_eq_hasEmpty(e: Regex 𝒜):  ℒ (δ e) = hasEmpty? (ℒ e) := by {
+  induction e with
+  | empty =>
+    simp [δ, ℒ, hasEmpty?]
+    ext w
+    constructor
+    . intro H
+      exfalso
+      exact H
+    . intro H
+      exfalso
+      let ⟨ hl, hr ⟩ := H
+      exact hl
+  | token t =>
+    simp [δ, ℒ, hasEmpty?]
+    ext w
+    constructor <;> intro H
+    . exfalso; exact H
+    . exfalso; let ⟨ hl, hr ⟩ := H
+      rw [hl] at hr
+      contradiction
+  | concatenation e₁ e₂ ihe₁ ihe₂ =>
+    simp [δ, ℒ, hasEmpty?] at *
+    rw [ihe₁, ihe₂]
+    sorry
+  | union e₁ e₂ ihe₁ ihe₂ =>
+    simp [δ, ℒ, hasEmpty?] at *
+    rw [ihe₁, ihe₂]
+    sorry
+  | star e ihe =>
+    simp [δ, ℒ, hasEmpty?] at *
+    sorry
+}
+
 theorem LD_imp_DL_concat {c:𝒜} {w: Word 𝒜}
 (ihe₁: w ∈ ℒ (𝒟 c e₁) → w ∈ 𝒟 c (ℒ e₁))
 (ihe₂: w ∈ ℒ (𝒟 c e₂) → w ∈ 𝒟 c (ℒ e₂))
 : w ∈ ℒ (𝒟 c (e₁⋅e₂)) → w ∈ 𝒟 c (ℒ (e₁⋅e₂)) := by {
+  intro H
+  simp [*] at *
+  simp [DerL_concat]
+  rw [←delta_eq_hasEmpty]
   sorry
 }
 
@@ -288,7 +331,6 @@ theorem LD_imp_DL: ∀ (c: 𝒜)(w: Word 𝒜),  w ∈ ℒ (𝒟 c re) → w ∈
   | star e ihe =>
     simp [derL] at *
     intro Hw
-    simp [ℒ, D] at *
     sorry
 }
 
@@ -312,7 +354,7 @@ theorem DL_imp_LD: ∀ (c: 𝒜) (w: Word 𝒜), w ∈ 𝒟 c (ℒ r) → w ∈ 
     simp [ℒ, D]
     cases hw
     simp [*]
-    rw [words_in_L_ε]
+    rfl
   | concatenation e₁ e₂ ihe₁ ihe₂ =>
     apply DL_imp_LD_concat ihe₁ ihe₂
   | union e₁ e₂ ihe₁ ihe₂ =>
@@ -330,11 +372,7 @@ theorem DL_imp_LD: ∀ (c: 𝒜) (w: Word 𝒜), w ∈ 𝒟 c (ℒ r) → w ∈ 
   | star e ihe =>
     intro hw
     simp [ℒ, D] at *
-    induction w with
-    | nil =>
-      apply nil_mem_star
-    | cons h t ihw =>
-      sorry
+    sorry
 }
 
 theorem LD_iff_DL: ∀ (c: 𝒜) (w: Word 𝒜),  w ∈ ℒ (𝒟 c r) ↔ w ∈ 𝒟 c (ℒ r) := by {
@@ -349,6 +387,28 @@ theorem LD_sseq_DL (c: 𝒜) (r: Regex 𝒜): ℒ (𝒟 c r) ⊆ 𝒟 c (ℒ r) 
 theorem DL_sseq_LD (c: 𝒜) (r: Regex 𝒜): 𝒟 c (ℒ r) ⊆ ℒ (𝒟 c r) := DL_imp_LD c
 
 theorem LD_eq_DL (c: 𝒜) (r: Regex 𝒜): ℒ (𝒟 c r) = 𝒟 c (ℒ r) := by {
-  apply Set.ext
-  apply LD_iff_DL
+  induction r with
+  | empty =>
+    simp [ℒ, D]
+    rfl
+  | token t =>
+    simp [ℒ, D]
+    simp [DerL_singleton]
+    split <;> simp
+  | concatenation e₁ e₂ ihe₁ ihe₂ =>
+    simp [ℒ, D]
+    simp [DerL_concat]
+    rw [←delta_eq_hasEmpty]
+    rw [←ihe₁, ←ihe₂]
+    rfl
+  | union e₁ e₂ ihe₁ ihe₂ =>
+    simp [ℒ, D]
+    simp [DerL_union]
+    rw [←ihe₁, ←ihe₂]
+    rfl
+  | star e ihe =>
+    simp [ℒ, D]
+    simp [DerL_star]
+    rw [←ihe]
+    rfl
 }

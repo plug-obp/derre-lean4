@@ -29,7 +29,7 @@ def ℒ: Regex 𝒜 → Language 𝒜
 | Φ       => ∅
 | τ c     => { [c] }
 | 𝓇₁ ⋅ 𝓇₂ => (ℒ 𝓇₁) * (ℒ 𝓇₂)
-| 𝓇₁ ⋃ 𝓇₂ => ℒ 𝓇₁ ∪ ℒ 𝓇₂
+| 𝓇₁ ⋃ 𝓇₂ => ℒ 𝓇₁ + ℒ 𝓇₂
 | 𝓇★      => (ℒ 𝓇)∗
 
 -- lemma star_emptyL: star ∅ w → w = [] := by {
@@ -45,7 +45,6 @@ def ℒ: Regex 𝒜 → Language 𝒜
 -- ε represents the language consisting only of the empty word.
 lemma words_in_L_ε (w: Word 𝒜): w ∈ ℒ ε ↔ w = [] := by {
   simp [ℒ, Lε]
-  exact Iff.rfl
 }
 
 lemma eps_denotes: @ℒ 𝒜 ε = 1 := by {

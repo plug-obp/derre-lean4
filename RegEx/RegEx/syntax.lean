@@ -36,6 +36,7 @@ infixl:70    "⋅"    => Regex.concatenation
 postfix:65   "★"    => Regex.star
 
 -- ε is a derived regex that matches only the empty string
+@[simp]
 def ε: Regex 𝒜 := .star .empty
 
 instance: Add (Regex 𝒜)   := ⟨ Regex.union ⟩

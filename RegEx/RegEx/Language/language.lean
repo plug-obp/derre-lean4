@@ -160,6 +160,9 @@ theorem not_mem_zero (x : Word α) : x ∉ (0 : Language α) :=
 theorem mem_one (x : Word α) : x ∈ (1 : Language α) ↔ x = [] := by rfl
 
 @[simp]
+theorem mem_one' (x : Word α) : x ∈ ({[]} : Language α) ↔ x = [] := by rfl
+
+@[simp]
 theorem mem_letter (w : Word 𝒜) : w ∈ ({[a]}: Language 𝒜) ↔ w = [a] := by rfl
 
 @[simp]
@@ -395,6 +398,16 @@ lemma one_mul_one: ∀ L: Language 𝒜, 1 * L = 1 ↔ L = 1 := by {
     simp
 }
 
+lemma mul_has_one: ∀ L₁ L₂: Language 𝒜, L₁ * L₂ = L₁ ↔ L₂ = 1 := by {
+  intros L₁ L₂
+  constructor
+  . intro H
+    sorry
+  . intro H
+    rw [H]
+    simp
+}
+
 lemma append_nil_iff_both_nil: ∀ s₁ s₂: Word 𝒜, s₁ ++ s₂ = [] ↔ s₁ = [] ∧ s₂ = [] := by {
   intros s₁ s₂
   constructor
@@ -415,7 +428,8 @@ lemma append_nil_iff_both_nil: ∀ s₁ s₂: Word 𝒜, s₁ ++ s₂ = [] ↔ s
 lemma one_mul_one': ∀ L₁ L₂: Language 𝒜, L₁ * L₂ = 1 ↔ L₁ = 1 ∧ L₂ = 1 := by {
   intros L₁ L₂
   constructor
-  . sorry
+  . intro H
+    sorry
   . intro H
     rw [H.left, H.right]
     apply ε_concatenation
@@ -456,3 +470,5 @@ lemma empty_singleton (hne: c ≠ d): {w: Word 𝒜 | (c :: w) ∈ ( {[d]}: Lang
   . intro H
     contradiction
 }
+
+lemma eps_in_empty: [] ∉ (∅: Language 𝒜) := id
