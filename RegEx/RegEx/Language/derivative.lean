@@ -175,50 +175,78 @@ lemma hasEmpty?_empty_in (L: Language 𝒜): hasEmpty? L = 1 ↔ [] ∈ L := by 
       apply And.intro; assumption; rfl
 }
 
-lemma der_concat_l₁ (c: 𝒜) (L₁ L₂: Language 𝒜) : [] ∈ L₁ → 𝒟 c (L₁ * L₂) = ((𝒟 c L₁) * L₂) + (𝒟 c L₂) := by {
-  intro hL₁
-  ext wx
-  constructor
-  . rintro ⟨ w₁, ⟨ w₂, ⟨ hw₁, hw₂, hw ⟩  ⟩  ⟩
-    dsimp [] at *
-    induction w₁ with
-    | nil =>
-      right
-      rw [nil_append_word] at hw
-      rw [hw] at hw₂
-      exact hw₂
-    | cons h t ihe =>
-      left
-      exists t
-      exists w₂
-      rw [Word.cons_append] at *
-      rw [Word.cons_eq_cons_iff] at hw
-      let ⟨ hc, ht ⟩ := hw
-      simp [*] at *
-      exact hw₁
-  . sorry
+lemma der_concat_to_union(c: 𝒜) (L₁ L₂: Language 𝒜): w ∈ 𝒟 c (L₁ * L₂) → w ∈ 𝒟 c L₁ * L₂ + 𝒟 c L₂ := by {
+  rintro ⟨ w₁, ⟨ w₂, ⟨ hw₁, hw₂, hw ⟩  ⟩  ⟩
+  dsimp [] at *
+  induction w₁ with
+  | nil =>
+    right
+    rw [nil_append_word] at hw
+    rw [hw] at hw₂
+    exact hw₂
+  | cons h t ihe =>
+    left
+    exists t
+    exists w₂
+    rw [Word.cons_append] at *
+    rw [Word.cons_eq_cons_iff] at hw
+    let ⟨ hc, ht ⟩ := hw
+    simp [*] at *
+    exact hw₁
 }
 
-lemma der_concat_l₂ (c: 𝒜) (L₁ L₂: Language 𝒜) : [] ∉ L₁ → 𝒟 c (L₁ * L₂) = (𝒟 c L₁) * L₂ := by {
-  intro hL₁
-  ext w
-  constructor
-  . rintro ⟨ w₁, ⟨ w₂, ⟨ hw₁, hw₂, hw ⟩  ⟩  ⟩
-    dsimp [] at *
-    dsimp [DerL_def, mul_def, Set.image2]
+lemma der_concat_to_union'(c: 𝒜) (L₁ L₂: Language 𝒜): w ∈ 𝒟 c (L₁ * L₂) → w ∈ 𝒟 c L₁ * L₂ + hasEmpty? L₁ * (𝒟 c L₂) := by {
+  rintro ⟨ w₁, ⟨ w₂, ⟨ hw₁, hw₂, hw ⟩ ⟩ ⟩
+  dsimp [] at *
+  induction w₁ with
+  | nil =>
+    right
+    rw [nil_append_word] at hw
+    rw [hw] at hw₂
+    simp [hasEmpty?_def] at *
+    exists []
     exists w
+  | cons h t ihe =>
+    left
+    exists t
+    exists w₂
+    rw [Word.cons_append] at *
+    rw [Word.cons_eq_cons_iff] at hw
+    let ⟨ hc, ht ⟩ := hw
+    simp [*] at *
+    exact hw₁
+}
+
+lemma der_union_to_concat(c: 𝒜) (L₁ L₂: Language 𝒜): wx ∈ 𝒟 c L₁ * L₂ + hasEmpty? L₁ * 𝒟 c L₂ → wx ∈ 𝒟 c (L₁ * L₂) := by {
+  rintro ( ⟨ w₁ , ⟨ w₂, ⟨hw₁, hw₂, hwx⟩ ⟩ ⟩ | ⟨ w₁, ⟨ w₂, ⟨ ⟨ w₁inL₁, w₁ε ⟩ , ⟨ hw₂ , hwx ⟩ ⟩ ⟩ ⟩ )
+  . simp [*] at *
+    dsimp [DerL_def, mul_def, Set.image2]
+    exists c::w₁
     exists w₂
     simp [*] at *
-
-    sorry
-  . sorry
+    constructor
+    . exact hw₁
+    . rw [Word.cons_append]
+      rw [Word.cons_inj]
+      exact hwx
+  . simp [*] at *
+    dsimp [DerL_def, mul_def, Set.image2]
+    exists []
+    exists c::w₂
+    constructor
+    . exact w₁inL₁
+    . constructor
+      . exact hw₂
+      . rw [nil_append_word] at *
+        rw [Word.cons_inj]
+        exact hwx
 }
 
 lemma DerL_concat (c: 𝒜) (L₁ L₂: Language 𝒜) : 𝒟 c (L₁ * L₂) = (𝒟 c L₁) * L₂ + (hasEmpty? L₁ * 𝒟 c L₂) := by {
-  ext w₁
+  ext wx
   constructor
-  . sorry
-  . sorry
+  . apply der_concat_to_union'
+  . apply der_union_to_concat
 }
 
 lemma DerL_union (c: 𝒜) (L₁ L₂: Language 𝒜) : 𝒟 c (L₁ + L₂) = 𝒟 c L₁ + 𝒟 c L₂ := by {
