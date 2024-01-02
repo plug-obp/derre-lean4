@@ -261,10 +261,10 @@ theorem LD_imp_DL_token: ∀ (c: 𝒜) (w: Word 𝒜), w ∈ ℒ (𝒟 c (τ t))
     exact Hw
 }
 
-lemma delta_eq_hasEmpty(e: Regex 𝒜):  ℒ (δ e) = hasEmpty? (ℒ e) := by {
+lemma delta_eq_hasEmpty(e: Regex 𝒜):  ℒ (δ e) = ν (ℒ e) := by {
   induction e with
   | empty =>
-    simp [δ, ℒ, hasEmpty?]
+    simp [δ, ℒ, ν]
     ext w
     constructor
     . intro H
@@ -275,7 +275,7 @@ lemma delta_eq_hasEmpty(e: Regex 𝒜):  ℒ (δ e) = hasEmpty? (ℒ e) := by {
       let ⟨ hl, _ ⟩ := H
       exact hl
   | token t =>
-    simp [δ, ℒ, hasEmpty?]
+    simp [δ, ℒ, ν]
     ext w
     constructor <;> intro H
     . exfalso; exact H
@@ -283,13 +283,13 @@ lemma delta_eq_hasEmpty(e: Regex 𝒜):  ℒ (δ e) = hasEmpty? (ℒ e) := by {
       rw [hl] at hr
       contradiction
   | concatenation e₁ e₂ ihe₁ ihe₂ =>
-    simp [δ, ℒ, hasEmpty?_concat] at *
+    simp [δ, ℒ, ν_concat] at *
     rw [ihe₁, ihe₂]
   | union e₁ e₂ ihe₁ ihe₂ =>
-    simp [δ, ℒ, hasEmpty?_union] at *
+    simp [δ, ℒ, ν_union] at *
     rw [ihe₁, ihe₂]
   | star e _ =>
-    simp [δ, ℒ, hasEmpty?_star] at *
+    simp [δ, ℒ, ν_star] at *
     rfl
 }
 

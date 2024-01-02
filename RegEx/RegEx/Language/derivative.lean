@@ -60,12 +60,16 @@ lemma der_head_single(w: Word 𝒜): c = x → w ∈ 𝒟 c ({[x]}: Language �
   exact Hw
 }
 
-def hasEmpty? (L: Language 𝒜): Language 𝒜 := { x | x ∈ L ∧ x = [] }
+/--!
+# Has Empty (_nu_llability)
+Maps a language to 1 or 0 depending on whether the language contains the empty word or not.
+-/
+def ν (L: Language 𝒜): Language 𝒜 := { x | x ∈ L ∧ x = [] }
 
-lemma hasEmpty?_def (L: Language 𝒜): hasEmpty? L = { x | x ∈ L ∧ x = [] } := rfl
+lemma ν_def (L: Language 𝒜): ν L = { x | x ∈ L ∧ x = [] } := rfl
 
-lemma hasEmpty?_empty: hasEmpty? (∅: Language 𝒜) = ∅ := by {
-  simp [hasEmpty?_def]
+lemma ν_empty: ν (∅: Language 𝒜) = ∅ := by {
+  simp [ν_def]
   ext w
   constructor
   . intro H
@@ -76,13 +80,13 @@ lemma hasEmpty?_empty: hasEmpty? (∅: Language 𝒜) = ∅ := by {
     contradiction
 }
 
-lemma hasEmpty?_epsilon: hasEmpty? Lε = (1: Language 𝒜) := by {
-  simp [hasEmpty?_def, Lε]
+lemma ν_epsilon: ν Lε = (1: Language 𝒜) := by {
+  simp [ν_def, Lε]
   rfl
 }
 
-lemma hasEmpty?_concat (L₁ L₂: Language 𝒜): hasEmpty? (L₁ * L₂) = (hasEmpty? L₁ * hasEmpty? L₂) := by {
-  simp [hasEmpty?_def]
+lemma ν_concat (L₁ L₂: Language 𝒜): ν (L₁ * L₂) = (ν L₁ * ν L₂) := by {
+  simp [ν_def]
   ext w
   constructor
   . intro H
@@ -112,24 +116,24 @@ lemma hasEmpty?_concat (L₁ L₂: Language 𝒜): hasEmpty? (L₁ * L₂) = (ha
       exact (Eq.symm hconc)
 }
 
-lemma hasEmpty?_union (L₁ L₂: Language 𝒜): hasEmpty? (L₁ + L₂) = (hasEmpty? L₁ + hasEmpty? L₂) := by {
+lemma ν_union (L₁ L₂: Language 𝒜): ν (L₁ + L₂) = (ν L₁ + ν L₂) := by {
   ext w
   constructor
   . rintro ⟨ ⟨ l ⟩ | ⟨ r ⟩  , we ⟩
     . left
-      simp [hasEmpty?_def, *] at *
+      simp [ν_def, *] at *
       exact l
     . right
-      simp [hasEmpty?_def, *] at *
+      simp [ν_def, *] at *
       exact r
   . rintro  (⟨h₁, h₂⟩ | ⟨h₁, h₂⟩)
-    . simp [hasEmpty?_def, *] at *
+    . simp [ν_def, *] at *
       simp [add_def, Set.union_def, Set.mem_def]
       constructor
       . left
         exact h₁
       . rfl
-    . simp [hasEmpty?_def, *] at *
+    . simp [ν_def, *] at *
       simp [add_def, Set.union_def, Set.mem_def]
       constructor
       . right
@@ -137,8 +141,8 @@ lemma hasEmpty?_union (L₁ L₂: Language 𝒜): hasEmpty? (L₁ + L₂) = (has
       .rfl
 }
 
-lemma hasEmpty?_star (L: Language 𝒜): hasEmpty? (L∗) = (1: Language 𝒜) := by {
-  simp [hasEmpty?_def, Lε]
+lemma ν_star (L: Language 𝒜): ν (L∗) = (1: Language 𝒜) := by {
+  simp [ν_def, Lε]
   ext w
   constructor
   . intro H
@@ -154,13 +158,13 @@ lemma hasEmpty?_star (L: Language 𝒜): hasEmpty? (L∗) = (1: Language 𝒜) :
 }
 
 
-lemma hasEmpty?_empty_in (L: Language 𝒜): hasEmpty? L = 1 ↔ [] ∈ L := by {
+lemma ν_empty_in (L: Language 𝒜): ν L = 1 ↔ [] ∈ L := by {
   constructor
   . intro h
-    simp [hasEmpty?_def, one_def] at *
+    simp [ν_def, one_def] at *
     sorry
   . intro H
-    simp [hasEmpty?_def, one_def]
+    simp [ν_def, one_def]
     ext w
     constructor
     . intro hw
@@ -195,7 +199,7 @@ lemma der_concat_to_union(c: 𝒜) (L₁ L₂: Language 𝒜): w ∈ 𝒟 c (L�
     exact hw₁
 }
 
-lemma der_concat_to_union'(c: 𝒜) (L₁ L₂: Language 𝒜): w ∈ 𝒟 c (L₁ * L₂) → w ∈ 𝒟 c L₁ * L₂ + hasEmpty? L₁ * (𝒟 c L₂) := by {
+lemma der_concat_to_union'(c: 𝒜) (L₁ L₂: Language 𝒜): w ∈ 𝒟 c (L₁ * L₂) → w ∈ 𝒟 c L₁ * L₂ + ν L₁ * (𝒟 c L₂) := by {
   rintro ⟨ w₁, ⟨ w₂, ⟨ hw₁, hw₂, hw ⟩ ⟩ ⟩
   dsimp [] at *
   induction w₁ with
@@ -203,7 +207,7 @@ lemma der_concat_to_union'(c: 𝒜) (L₁ L₂: Language 𝒜): w ∈ 𝒟 c (L�
     right
     rw [nil_append_word] at hw
     rw [hw] at hw₂
-    simp [hasEmpty?_def] at *
+    simp [ν_def] at *
     exists []
     exists w
   | cons h t ihe =>
@@ -217,7 +221,7 @@ lemma der_concat_to_union'(c: 𝒜) (L₁ L₂: Language 𝒜): w ∈ 𝒟 c (L�
     exact hw₁
 }
 
-lemma der_union_to_concat(c: 𝒜) (L₁ L₂: Language 𝒜): wx ∈ 𝒟 c L₁ * L₂ + hasEmpty? L₁ * 𝒟 c L₂ → wx ∈ 𝒟 c (L₁ * L₂) := by {
+lemma der_union_to_concat(c: 𝒜) (L₁ L₂: Language 𝒜): wx ∈ 𝒟 c L₁ * L₂ + ν L₁ * 𝒟 c L₂ → wx ∈ 𝒟 c (L₁ * L₂) := by {
   rintro ( ⟨ w₁ , ⟨ w₂, ⟨hw₁, hw₂, hwx⟩ ⟩ ⟩ | ⟨ w₁, ⟨ w₂, ⟨ ⟨ w₁inL₁, w₁ε ⟩ , ⟨ hw₂ , hwx ⟩ ⟩ ⟩ ⟩ )
   . simp [*] at *
     dsimp [DerL_def, mul_def, Set.image2]
@@ -242,7 +246,7 @@ lemma der_union_to_concat(c: 𝒜) (L₁ L₂: Language 𝒜): wx ∈ 𝒟 c L�
         exact hwx
 }
 
-lemma DerL_concat (c: 𝒜) (L₁ L₂: Language 𝒜) : 𝒟 c (L₁ * L₂) = (𝒟 c L₁) * L₂ + (hasEmpty? L₁ * 𝒟 c L₂) := by {
+lemma DerL_concat (c: 𝒜) (L₁ L₂: Language 𝒜) : 𝒟 c (L₁ * L₂) = (𝒟 c L₁) * L₂ + (ν L₁ * 𝒟 c L₂) := by {
   ext wx
   constructor
   . apply der_concat_to_union'
@@ -266,30 +270,44 @@ lemma DerL_union (c: 𝒜) (L₁ L₂: Language 𝒜) : 𝒟 c (L₁ + L₂) = �
       next H₂ => exact H₂
 }
 
-lemma DerL_star (c: 𝒜) (L: Language 𝒜) : 𝒟 c (L∗) = (𝒟 c L) * (L∗) := by {
-  ext ww
-  constructor
-  . intro H
-    induction ww with
-    | nil =>
-      simp [DerL_def, Lε, mul_def, Set.image2] at *
-      let ⟨ n, hS ⟩ := H
+lemma DerL_pow (c: 𝒜) (L: Language 𝒜): 𝒟 c (L ^ (n+1)) = 𝒟 c L * (L ^ n) + ν L * 𝒟 c (L ^n) := by {
+  rw [←DerL_concat c L (L ^ n)]
+  rw [←powL_n]
+}
+
+lemma DerL_star (c: 𝒜) (L: Language 𝒜): 𝒟 c (L∗) = (𝒟 c L) * (L∗) :=
+  calc
+    (𝒟 c L∗) = 𝒟 c (1 + (L⊕)) := by rw [star_is_eps_union_plus]
+    _ = 𝒟 c 1 + 𝒟 c (L⊕)      := by rw [DerL_union]
+    _ = ∅ + 𝒟 c (L⊕)          := by rw [one_eq_eps, DerL_epsilon]
+    _ = 𝒟 c (L⊕)              := by rw [←zero_eq_empty, zero_add]
+    _ = 𝒟 c (L * (L∗))        := by rw [mul_eq_append, positive_closure]
+    _ = (𝒟 c L) * (L∗) + ν L * 𝒟 c (L∗) := by rw [DerL_concat]
+    _ = (𝒟 c L) * (L∗) := by {
+      rw [add_eq_self_iff]
+      rintro (wx ⟨ w₁, ⟨ w₂, ⟨ ⟨ hw₁, w₁e ⟩ , ⟨ hw₂, hwx ⟩ ⟩ ⟩ ⟩ )
+      simp [*] at *
+      rw [nil_append_word] at hwx
+      exists w₂
       exists []
       constructor
-      . exfalso
+      . simp [kleene_closure_def] at *
+        rcases hw₂ with ⟨ n, powN ⟩
         induction n with
         | zero =>
-          simp [DerL_def, Lε] at hS
-        | succ n ih =>
-          simp [powL_n] at hS
-          apply ih
-          let ⟨ w₁, w₂, hw₁, hw₂, hw ⟩ := hS
-          simp [] at *
-          sorry
-      . exists []
-        constructor
+          exfalso
+          contradiction
+        | succ n ihe =>
+          apply ihe
+          simp [*] at *
+          have hln : L * L ^ n = L ^ n := by {
+            rw [append_with_empty_pown_eq_pown]
+            exact hw₁
+          }
+          rw [hln] at powN
+          exact powN
+      . constructor
         . apply eps_in_star
-        . rfl
-    | cons h t ihe => sorry
-  . sorry
-}
+        . simp [*] at *
+          apply word_append_nil
+    }

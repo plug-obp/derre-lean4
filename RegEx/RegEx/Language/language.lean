@@ -157,8 +157,16 @@ instance Language.mul: Mul (Language 𝒜) := ⟨ concatenationL ⟩
 theorem zero_def : (0 : Language α) = (∅ : Set _) :=
   rfl
 
+lemma zero_eq_empty: (0: Language 𝒜) = ∅ := rfl
+
 theorem one_def : (1 : Language α) = ({[]} : Set (Word α)) :=
   rfl
+
+-- The language of ε is the singleton set { [] }
+--  L ε = { [] }
+def Lε : Language 𝒜  := { [] }
+
+lemma one_eq_eps: (1: Language 𝒜) = Lε := rfl
 
 theorem add_def (l m : Language α) : l + m = (l ∪ m : Set (List α)) :=
   rfl
@@ -364,12 +372,17 @@ lemma concat_kleene_closure_idem (L: Language 𝒜): L∗ * L∗ = L∗  := by a
 def positive_closure(L: Language 𝒜): Language 𝒜 := L ++ (L∗)
 postfix:65   "⊕"    => positive_closure
 
+lemma mul_eq_append (L₁ L₂: Language 𝒜):  L₁ * L₂ = L₁ ++ L₂ := rfl
+
+def star_eq_eps_union_plus (L: Language 𝒜): L∗ = 1 + (L⊕) := by {
+  rw [positive_closure, ←mul_eq_append, eq_comm]
+  apply one_add_self_mul_kstar_eq_kstar
+}
+
+
+
 def sigma (𝒜: Type*): Language 𝒜 := { [a] | a : 𝒜 }
 -- notation "Σ" => sigma
-
--- The language of ε is the singleton set { [] }
---  L ε = { [] }
-def Lε : Language 𝒜  := { [] }
 
 @[simp]
 lemma empty_concatenation: ∀ L: Language 𝒜, ∅ ++ L = ∅ := by apply zero_mul
@@ -464,3 +477,36 @@ lemma empty_singleton (hne: c ≠ d): {w: Word 𝒜 | (c :: w) ∈ ( {[d]}: Lang
 }
 
 lemma eps_in_empty: [] ∉ (∅: Language 𝒜) := id
+
+lemma eps_union_star_is_star: ∀ L: Language 𝒜, (1 + L)∗ = L∗ := by {
+  sorry
+}
+lemma star_is_eps_union_plus: ∀ L: Language 𝒜, L∗ = 1 + (L⊕) := by {
+  intro L
+  rw [positive_closure, ←mul_eq_append]
+  simp [eps_union_star_is_star]
+}
+
+lemma add_involution: ∀ L: Language 𝒜, L + L = L := by {
+  intro L
+  apply Set.union_self
+}
+
+lemma add_eq_self_iff: ∀ L₁ L₂: Language 𝒜, L₁ + L₂ = L₁ ↔ L₂ ⊆ L₁ := by {
+  intros L₁ L₂
+  constructor
+  . intro H
+    rw [←H]
+    apply Set.subset_union_right
+  . intro H
+    apply Set.union_eq_self_of_subset_right
+    exact H
+}
+
+lemma append_with_empty_pown_eq_pown (L: Language 𝒜) (n: ℕ): L * (L ^ n) = (L ^ n) ↔ [] ∈ L := by {
+  sorry
+}
+
+lemma append_with_empty_star_eq_star (L: Language 𝒜): L * L∗ = L∗ ↔ [] ∈ L := by {
+  sorry
+}
