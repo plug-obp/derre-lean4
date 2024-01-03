@@ -257,6 +257,31 @@ lemma powL_zero (L: Language 𝒜): L ^ 0 = 1 := rfl
 lemma powL_n (L: Language 𝒜): L ^ (n+1) = L * (L ^ n) := by apply pow_succ
 
 @[simp]
+lemma powL_n_right (L: Language 𝒜): L ^ (n+1) = (L ^ n) * L := by {
+  rw [powL_n]
+  ext wx
+  constructor
+  . rintro ⟨ w₁, ⟨ w₂, ⟨ hw₁, ⟨ hw₂, hwx ⟩  ⟩  ⟩  ⟩
+    simp [*] at *
+    exists w₂
+    exists w₁
+    simp [*] at *
+    induction n with
+    | zero =>
+      simp [*] at *
+      rw [mem_one] at hw₂
+      rw [hw₂]
+      rw [hw₂] at hwx
+      rw [nil_append_word, word_append_nil] at *
+      exact hwx
+    | succ n ihe =>
+      simp [*] at *
+      apply ihe
+      sorry
+  . sorry
+}
+
+@[simp]
 lemma powL_one (L: Language 𝒜): L ^ 1 = L := by apply pow_one
 
 /-
@@ -479,6 +504,8 @@ lemma empty_singleton (hne: c ≠ d): {w: Word 𝒜 | (c :: w) ∈ ( {[d]}: Lang
 lemma eps_in_empty: [] ∉ (∅: Language 𝒜) := id
 
 lemma eps_union_star_is_star: ∀ L: Language 𝒜, (1 + L)∗ = L∗ := by {
+  intro L
+  rw [star_eq_eps_union_plus]
   sorry
 }
 lemma star_is_eps_union_plus: ∀ L: Language 𝒜, L∗ = 1 + (L⊕) := by {
@@ -503,10 +530,11 @@ lemma add_eq_self_iff: ∀ L₁ L₂: Language 𝒜, L₁ + L₂ = L₁ ↔ L₂
     exact H
 }
 
-lemma append_with_empty_pown_eq_pown (L: Language 𝒜) (n: ℕ): L * (L ^ n) = (L ^ n) ↔ [] ∈ L := by {
+lemma append_with_empty_star_eq_star (L: Language 𝒜): L * L∗ = L∗ ↔ [] ∈ L := by {
   sorry
 }
 
-lemma append_with_empty_star_eq_star (L: Language 𝒜): L * L∗ = L∗ ↔ [] ∈ L := by {
-  sorry
+lemma pow_comm (L: Language 𝒜): L^n * L = L * (L^n) := by {
+  rw [←powL_n]
+  rw [powL_n_right]
 }

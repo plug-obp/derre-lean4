@@ -287,9 +287,23 @@ lemma DerL_union (c: 𝒜) (L₁ L₂: Language 𝒜) : 𝒟 c (L₁ + L₂) = �
       next H₂ => exact H₂
 }
 
-lemma DerL_pow (c: 𝒜) (L: Language 𝒜): 𝒟 c (L ^ (n+1)) = 𝒟 c L * (L ^ n) + ν L * 𝒟 c (L ^n) := by {
+lemma DerL_pow₀ (c: 𝒜) (L: Language 𝒜): 𝒟 c (L ^ (n+1)) = 𝒟 c L * (L ^ n) + ν L * 𝒟 c (L ^ n) := by {
   rw [←DerL_concat c L (L ^ n)]
   rw [←powL_n]
+}
+
+lemma DerL_pow (c: 𝒜) (L: Language 𝒜): 𝒟 c (L ^ (n+1)) = 𝒟 c L * (L ^ n) := by {
+  induction n with
+  | zero =>
+    rw [powL_zero]
+    rw [powL_one]
+    rw [mul_one]
+  | succ n ihe =>
+    simp [*] at *
+    rw [←powL_n]
+    rw [DerL_concat]
+    rw [add_eq_self_iff]
+    sorry
 }
 
 lemma DerL_star (c: 𝒜) (L: Language 𝒜): 𝒟 c (L∗) = (𝒟 c L) * (L∗) :=
@@ -328,3 +342,48 @@ lemma DerL_star (c: 𝒜) (L: Language 𝒜): 𝒟 c (L∗) = (𝒟 c L) * (L∗
         . simp [*] at *
           apply word_append_nil
     }
+
+
+lemma DerL_star_to' (c: 𝒜) (L: Language 𝒜): 𝒟 c (L∗) ⊆ (𝒟 c L) * (L∗) := by {
+  intros wx hwx
+  rcases hwx with ⟨ n, m ⟩
+  exists wx
+  exists []
+  simp [*] at *
+  constructor
+  . sorry
+  . constructor
+    . apply eps_in_star
+    . apply word_append_nil
+}
+lemma DerL_star' (c: 𝒜) (L: Language 𝒜): 𝒟 c (L∗) = (𝒟 c L) * (L∗) :=
+  calc
+    (𝒟 c L∗) = 𝒟 c (1 + (L⊕)) := by rw [star_is_eps_union_plus]
+    _ = 𝒟 c 1 + 𝒟 c (L⊕)      := by rw [DerL_union]
+    _ = ∅ + 𝒟 c (L⊕)          := by rw [one_eq_eps, DerL_epsilon]
+    _ = 𝒟 c (L⊕)              := by rw [←zero_eq_empty, zero_add]
+    _ = 𝒟 c (L * (L∗))        := by rw [mul_eq_append, positive_closure]
+    _ = (𝒟 c L) * (L∗) + ν L * 𝒟 c (L∗) := by rw [DerL_concat]
+    _ = (𝒟 c L) * (L∗) := by {
+      rw [add_eq_self_iff]
+      intros wx hwx
+      rcases hwx with ⟨ w₁, ⟨w₂, ⟨ w₁L, w₁ε ⟩ , hw₂, hwx₂⟩⟩
+      simp [*] at *
+      rw [nil_append_word] at hwx₂
+      rw [←hwx₂]
+      apply DerL_star_to' c L hw₂
+    }
+
+
+def toLang (a : Set (Word 𝒜)) : Language 𝒜 := a
+
+lemma DerL_star'' (c: 𝒜) (L: Language 𝒜): 𝒟 c (L∗) = (𝒟 c L) * (L∗) :=
+  calc
+    (𝒟 c L∗) = 𝒟 c (toLang { w | ∃ n: ℕ, w ∈ (L ^ n)}) := by sorry
+    _ = 𝒟 c (1:Language 𝒜) + (toLang { w | ∃ n: ℕ, n > 0 → w ∈ 𝒟 c (L ^ n)}) := by sorry
+    _ = ∅ + (toLang { w | ∃ n: ℕ, n > 0 → w ∈ 𝒟 c (L ^ n)}) := by sorry
+    _ = (toLang { w | ∃ n: ℕ, n > 0 → w ∈ 𝒟 c (L ^ n)}) := by sorry
+    _ = (toLang { w | ∃ n: ℕ, n > 0 → w ∈ 𝒟 c L * (L ^ (n-1))}) := by sorry
+    _ = 𝒟 c L * (toLang { w | ∃ n: ℕ, n > 0 → w ∈ (L ^ (n-1))}) := by sorry
+    _ = 𝒟 c L * (toLang { w | ∃ n: ℕ, w ∈ (L ^ n)}) := by sorry
+    _ = 𝒟 c L * (L∗) := by sorry
