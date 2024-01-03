@@ -253,6 +253,23 @@ lemma DerL_concat (c: 𝒜) (L₁ L₂: Language 𝒜) : 𝒟 c (L₁ * L₂) = 
   . apply der_union_to_concat
 }
 
+lemma DerL_concat_self (c: 𝒜) (L: Language 𝒜): 𝒟 c (L * L) = (𝒟 c L) * L := calc
+  𝒟 c (L * L) = 𝒟 c L * L + (ν L * 𝒟 c L) := by rw [DerL_concat]
+          _ = 𝒟 c L * L                   := by {
+            rw [add_eq_self_iff]
+            rintro (wx ⟨ w₁, ⟨ w₂, ⟨ ⟨ hw₁, w₁e ⟩ , ⟨ hw₂, hwx ⟩ ⟩ ⟩ ⟩ )
+            simp [*] at *
+            rw [nil_append_word] at hwx
+            exists w₂
+            exists []
+            constructor
+            . exact hw₂
+            . constructor
+              . exact hw₁
+              . simp [*] at *
+                apply word_append_nil
+          }
+
 lemma DerL_union (c: 𝒜) (L₁ L₂: Language 𝒜) : 𝒟 c (L₁ + L₂) = 𝒟 c L₁ + 𝒟 c L₂ := by {
   ext w₁
   simp [DerL_def]
