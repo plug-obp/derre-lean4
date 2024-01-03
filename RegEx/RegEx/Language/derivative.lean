@@ -331,12 +331,8 @@ lemma DerL_star (c: 𝒜) (L: Language 𝒜): 𝒟 c (L∗) = (𝒟 c L) * (L∗
         | succ n ihe =>
           apply ihe
           simp [*] at *
-          have hln : L * L ^ n = L ^ n := by {
-            rw [append_with_empty_pown_eq_pown]
-            exact hw₁
-          }
-          rw [hln] at powN
-          exact powN
+          rw [← powL_n] at powN
+          sorry
       . constructor
         . apply eps_in_star
         . simp [*] at *
