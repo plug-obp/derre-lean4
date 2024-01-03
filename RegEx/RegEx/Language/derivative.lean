@@ -370,16 +370,16 @@ lemma DerL_star' (c: 𝒜) (L: Language 𝒜): 𝒟 c (L∗) = (𝒟 c L) * (L�
       apply DerL_star_to' c L hw₂
     }
 
-
 def toLang (a : Set (Word 𝒜)) : Language 𝒜 := a
 
 lemma DerL_star'' (c: 𝒜) (L: Language 𝒜): 𝒟 c (L∗) = (𝒟 c L) * (L∗) :=
   calc
-    (𝒟 c L∗) = 𝒟 c (toLang { w | ∃ n: ℕ, w ∈ (L ^ n)}) := by sorry
-    _ = 𝒟 c (1:Language 𝒜) + (toLang { w | ∃ n: ℕ, n > 0 → w ∈ 𝒟 c (L ^ n)}) := by sorry
-    _ = ∅ + (toLang { w | ∃ n: ℕ, n > 0 → w ∈ 𝒟 c (L ^ n)}) := by sorry
-    _ = (toLang { w | ∃ n: ℕ, n > 0 → w ∈ 𝒟 c (L ^ n)}) := by sorry
-    _ = (toLang { w | ∃ n: ℕ, n > 0 → w ∈ 𝒟 c L * (L ^ (n-1))}) := by sorry
-    _ = 𝒟 c L * (toLang { w | ∃ n: ℕ, n > 0 → w ∈ (L ^ (n-1))}) := by sorry
-    _ = 𝒟 c L * (toLang { w | ∃ n: ℕ, w ∈ (L ^ n)}) := by sorry
-    _ = 𝒟 c L * (L∗) := by sorry
+    (𝒟 c L∗) = 𝒟 c (toLang { w | ∃ n: ℕ, w ∈ (L ^ n)}) := by rw [kleene_closure_def, toLang] -- this is equivalent to a big sum Σ₀∞
+    _ = 𝒟 c (L^0) + (toLang { w | ∃ n: ℕ, n > 0 → w ∈ 𝒟 c (L ^ n)}) := by sorry -- extract one from the sum L^0 ∪ Σ₁∞
+    _ = 𝒟 c (1:Language 𝒜) + (toLang { w | ∃ n: ℕ, n > 0 → w ∈ 𝒟 c (L ^ n)}) := by rw [pow_zero] -- L^0 = 1
+    _ = ∅ + (toLang { w | ∃ n: ℕ, n > 0 → w ∈ 𝒟 c (L ^ n)}) := by rw [one_eq_eps, DerL_epsilon]   -- 𝒟 c 1 = ∅
+    _ = (toLang { w | ∃ n: ℕ, n > 0 → w ∈ 𝒟 c (L ^ n)}) := by rw [←zero_eq_empty, zero_add]       -- ∅ + L = L
+    _ = (toLang { w | ∃ n: ℕ, n > 0 → w ∈ 𝒟 c L * (L ^ (n-1))}) := by sorry                       -- 𝒟 c (L^n) = 𝒟 c L * L^(n-1) DerL_pow
+    _ = 𝒟 c L * (toLang { w | ∃ n: ℕ, n > 0 → w ∈ (L ^ (n-1))}) := by sorry                       -- Σ₁∞ (D c L) * L^n = (D c L) * Σ₁∞ L^n --- factor out (D c L)
+    _ = 𝒟 c L * (toLang { w | ∃ m: ℕ, w ∈ (L ^ m)}) := by sorry                                   -- n ∈ ℕ, n > 0 <=> m = n-1, m ∈ ℕ       --- reindex
+    _ = 𝒟 c L * (L∗) := by rw [←kleene_closure_def, toLang]                                       -- we get back a kleene closure
