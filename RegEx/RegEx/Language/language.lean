@@ -265,6 +265,10 @@ lemma powL_n (L: Language 𝒜): L ^ (n+1) = L * (L ^ n) := by apply pow_succ
 @[simp]
 lemma powL_one (L: Language 𝒜): L ^ 1 = L := by apply pow_one
 
+lemma powL_comm (L: Language 𝒜): L^n * L = L * (L^n) := by rw [pow_mul_comm']
+
+lemma powL_n_right (L: Language 𝒜): L ^ (n+1) = (L ^ n) * L := by rw [powL_n, powL_comm]
+
 /-
 The free monoid L^* is called the "Kleene star of A". Also known as Kleene closure.
 -/
