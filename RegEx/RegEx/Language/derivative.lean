@@ -298,7 +298,16 @@ lemma DerL_pow (c: 𝒜) (L: Language 𝒜)(n: ℕ): 𝒟 c (L ^ (n+1)) = 𝒟 c
     rw [DerL_concat]
     rw [←powL_n] at *
     rw [ihe]
-    sorry
+    rw [powL_n]
+    have conc: 𝒟 c L * (L * L ^ n) + ν L * (𝒟 c L * L ^ n) = 𝒟 c L * (L * L ^ n) :=
+    calc
+      𝒟 c L * (L * L ^ n) + ν L * (𝒟 c L * L ^ n)
+        = (𝒟 c L * L) * L ^ n + (ν L * 𝒟 c L) * L ^ n := by simp [←mul_assoc]
+      _ = (𝒟 c L * L + ν L * 𝒟 c L) * L ^ n := by rw [add_mul]
+      _ = (𝒟 c (L * L)) * L ^ n := by rw [← DerL_concat]
+      _ = (𝒟 c L * L) * L ^ n := by rw [DerL_concat_self]
+      _ = 𝒟 c L * (L * L ^ n) := by rw [mul_assoc]
+    exact conc
 }
 
 lemma DerL_star (c: 𝒜) (L: Language 𝒜): 𝒟 c (L∗) = (𝒟 c L) * (L∗) :=
