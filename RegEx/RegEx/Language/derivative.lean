@@ -159,26 +159,18 @@ lemma ν_star (L: Language 𝒜): ν (L∗) = (1: Language 𝒜) := by {
     . exact H
 }
 
+lemma eps_in_ν_imp_eps(L: Language 𝒜): [] ∈ ν L → [] ∈ L := by {
+  rintro ⟨ h₁, _ ⟩
+  exact h₁
+}
 
-lemma ν_empty_in (L: Language 𝒜): ν L = 1 ↔ [] ∈ L := by {
+lemma ν_empty_in (L: Language 𝒜): [] ∈ ν L ↔ [] ∈ L := by {
   constructor
-  . intro h
-    simp [ν_def, one_def] at *
-    sorry
+  . rintro ⟨ h₁, _ ⟩
+    exact h₁
   . intro H
     simp [ν_def, one_def]
-    ext w
-    constructor
-    . intro hw
-      simp [*] at *
-      rw [mem_one']
-      let ⟨ _, hw₂ ⟩ := hw
-      exact hw₂
-    . intro hw
-      simp [*] at *
-      rw [mem_one'] at hw
-      rw [hw]
-      apply And.intro; assumption; rfl
+    exact ⟨ H, rfl ⟩
 }
 
 lemma der_concat_to_union(c: 𝒜) (L₁ L₂: Language 𝒜): w ∈ 𝒟 c (L₁ * L₂) → w ∈ 𝒟 c L₁ * L₂ + 𝒟 c L₂ := by {
@@ -310,7 +302,7 @@ lemma DerL_pow (c: 𝒜) (L: Language 𝒜)(n: ℕ): 𝒟 c (L ^ (n+1)) = 𝒟 c
 
 lemma DerL_star (c: 𝒜) (L: Language 𝒜): 𝒟 c (L∗) = (𝒟 c L) * (L∗) :=
   calc
-    (𝒟 c L∗) = 𝒟 c (1 + (L⊕)) := by rw [star_is_eps_union_plus]
+    (𝒟 c L∗) = 𝒟 c (1 + (L⊕)) := by rw [star_eq_eps_union_plus]
     _ = 𝒟 c 1 + 𝒟 c (L⊕)      := by rw [DerL_union]
     _ = ∅ + 𝒟 c (L⊕)          := by rw [one_eq_eps, DerL_epsilon]
     _ = 𝒟 c (L⊕)              := by rw [←zero_eq_empty, zero_add]
@@ -356,7 +348,7 @@ lemma DerL_star_to' (c: 𝒜) (L: Language 𝒜): 𝒟 c (L∗) ⊆ (𝒟 c L) *
 }
 lemma DerL_star' (c: 𝒜) (L: Language 𝒜): 𝒟 c (L∗) = (𝒟 c L) * (L∗) :=
   calc
-    (𝒟 c L∗) = 𝒟 c (1 + (L⊕)) := by rw [star_is_eps_union_plus]
+    (𝒟 c L∗) = 𝒟 c (1 + (L⊕)) := by rw [star_eq_eps_union_plus]
     _ = 𝒟 c 1 + 𝒟 c (L⊕)      := by rw [DerL_union]
     _ = ∅ + 𝒟 c (L⊕)          := by rw [one_eq_eps, DerL_epsilon]
     _ = 𝒟 c (L⊕)              := by rw [←zero_eq_empty, zero_add]
@@ -398,11 +390,6 @@ lemma powL_n' (L: Language 𝒜) (hn: n≥1): L ^ (n) = L * (L ^ (n-1)) := by {
     exact Nat.lt_asymm hn hn
   | succ n _ =>
     simp [*] at *
-}
-
-
-lemma dd (wx: Word 𝒜) (L: Language 𝒜) (hwx: wx ∈ L ^ (n + 1)) : wx ∈ L ^ n → wx ∈ L ^ 0 ∨ wx ∈ L ^ (n + 1) := by {
-  tauto
 }
 
 lemma union_split_l0 (L: Language 𝒜): ⋃ n, L ^ n = ⋃ m ≥ 1, L^0 ∪ L^m := by {
