@@ -298,8 +298,7 @@ lemma DerL_pow (c: 𝒜) (L: Language 𝒜)(n: ℕ): 𝒟 c (L ^ (n+1)) = 𝒟 c
     rw [DerL_concat]
     rw [←powL_n] at *
     rw [ihe]
-
-
+    sorry
 }
 
 lemma DerL_star (c: 𝒜) (L: Language 𝒜): 𝒟 c (L∗) = (𝒟 c L) * (L∗) :=
