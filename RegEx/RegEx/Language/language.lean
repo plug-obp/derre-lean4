@@ -42,6 +42,8 @@ variable
   where the linear order is given by ℕ, and 𝒜 is the alphabet.
 -/
 alias Word := List
+instance : Coe (Word 𝒜) (List 𝒜) := ⟨λ w => w⟩
+instance : Coe (List 𝒜) (Word 𝒜) := ⟨λ w => w⟩
 instance: Append (Word 𝒜) := ⟨ List.append ⟩
 instance: HAppend (Word 𝒜) (List 𝒜) (Word 𝒜) := ⟨ List.append ⟩
 instance: HAppend (List 𝒜) (Word 𝒜) (Word 𝒜) := ⟨ List.append ⟩
@@ -117,6 +119,8 @@ As usual a set is a T → Prop, so in our case  (Word 𝒜) → Prop
 -/
 
 def Language 𝒜 := Set $ Word 𝒜
+instance : Coe (Language 𝒜) (Set $ Word 𝒜) := ⟨λ L => L⟩
+instance : Coe (Set $ Word 𝒜) (Language 𝒜) := ⟨λ L => L⟩
 instance: Membership (Word 𝒜) (Language 𝒜) := ⟨Set.Mem⟩
 instance: EmptyCollection (Language 𝒜) := ⟨ λ _ => False ⟩
 instance: Union (Language 𝒜) := ⟨Set.union⟩
@@ -152,7 +156,9 @@ instance Language.zero: Zero (Language 𝒜) := ⟨ ∅ ⟩
 instance Language.one: One (Language 𝒜) := ⟨ { [] } ⟩
 instance Language.inhabited: Inhabited (Language 𝒜) := ⟨ ∅ ⟩
 instance Language.add: Add (Language 𝒜) := ⟨ Set.union ⟩
+instance Language.hadd: HAdd (Language 𝒜) (Set (Word 𝒜)) (Language 𝒜) := ⟨ Set.union ⟩
 instance Language.mul: Mul (Language 𝒜) := ⟨ concatenationL ⟩
+instance Language.hmul: HMul (Language 𝒜) (Set (Word 𝒜)) (Language 𝒜) := ⟨ concatenationL ⟩
 
 theorem zero_def : (0 : Language α) = (∅ : Set _) :=
   rfl
@@ -404,10 +410,10 @@ def star_eq_eps_union_plus (L: Language 𝒜): L∗ = 1 + (L⊕) := by {
   apply one_add_self_mul_kstar_eq_kstar
 }
 
-
-
-def sigma (𝒜: Type*): Language 𝒜 := { [a] | a : 𝒜 }
+def LSigma (𝒜: Type*): Language 𝒜 := { [a] | a : 𝒜 }
 -- notation "Σ" => sigma
+
+lemma sigma_def (𝒜: Type*): LSigma 𝒜 = { [a] | a : 𝒜 } := rfl
 
 @[simp]
 lemma empty_concatenation: ∀ L: Language 𝒜, ∅ ++ L = ∅ := by apply zero_mul
