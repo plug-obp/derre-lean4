@@ -400,14 +400,6 @@ lemma powL_n' (L: Language 𝒜) (hn: n≥1): L ^ (n) = L * (L ^ (n-1)) := by {
     simp [*] at *
 }
 
-example {α I : Type*} (A B : I → Set α) (s : Set α) : (s ∩ ⋃ i, A i) = ⋃ i, A i ∩ s := by
-  ext x
-  simp only [Set.mem_inter_iff, Set.mem_iUnion]
-  constructor
-  · rintro ⟨ xs, ⟨ i, xAi ⟩ ⟩
-    exact ⟨ i, xAi, xs ⟩
-  . rintro ⟨ i, xAi, xs ⟩
-    exact ⟨ xs, ⟨ i, xAi ⟩ ⟩
 
 lemma dd (wx: Word 𝒜) (L: Language 𝒜) (hwx: wx ∈ L ^ (n + 1)) : wx ∈ L ^ n → wx ∈ L ^ 0 ∨ wx ∈ L ^ (n + 1) := by {
   tauto
