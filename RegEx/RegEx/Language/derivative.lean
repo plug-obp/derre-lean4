@@ -283,6 +283,8 @@ lemma DerL_union (c: 𝒜) (L₁ L₂: Language 𝒜) : 𝒟 c (L₁ + L₂) = �
       next H₂ => exact H₂
 }
 
+lemma DerL_union_self(c: 𝒜) (L: Language 𝒜) : 𝒟 c (L + L) = 𝒟 c L := by rw [add_involution]
+
 lemma DerL_pow₀ (c: 𝒜) (L: Language 𝒜): 𝒟 c (L ^ (n+1)) = 𝒟 c L * (L ^ n) + ν L * 𝒟 c (L ^ n) := by {
   rw [←DerL_concat c L (L ^ n)]
   rw [←powL_n]
@@ -458,39 +460,37 @@ lemma derL_factor_in(c: 𝒜) (L: Language 𝒜): 𝒟 c (⋃ n ≥ 1, L ^ n) = 
   sorry
 }
 
+lemma iUnion_to_exists (c: 𝒜) (L: Language 𝒜): wx ∈ 𝒟 c (⋃ (n : ℕ), L ^ (n + 1)) ↔ ∃ k, wx ∈ 𝒟 c (L ^ (k + 1)) := by {
+  simp [Set.mem_iUnion]
+  constructor
+  . rintro ⟨ L₁, ⟨ ⟨ n, m ⟩ , hwx ⟩ ⟩
+    simp [*] at *
+    exists n
+    rw [←m] at hwx
+    exact hwx
+  . rintro ⟨ n, hwx ⟩
+    rw [←powL_n] at hwx
+    exists (L ^ (n + 1))
+    constructor
+    . exists n
+    . exact hwx
+}
+
 --***** This is DerL_plus because the union is over ℕ⁺
 lemma DerL_iUnion(c: 𝒜) (L: Language 𝒜): 𝒟 c (⋃ n, L ^ (n + 1)) = ⋃ n, 𝒟 c (L ^ (n + 1)) := by {
   ext wx
-  rw [Set.mem_iUnion] at *
   constructor
   . rintro ⟨L₁, ⟨⟨n, m⟩  , hh ⟩ ⟩
     simp [*] at *
     exists n
     rw [←m] at hh
     exact hh
-  . rintro ⟨ n, hd ⟩
-    induction n with
-    | zero =>
-      simp [*] at *
-      exists L
-      constructor
-      . exists 0
-        simp [*] at *
-      . exact hd
-    | succ n ihe =>
-      simp [*] at *
-      apply ihe
-      rw [powL_n] at hd
-      rw [DerL_pow]
-      rw [DerL_concat] at hd
-      rw [DerL_pow] at hd
-      rw [powL_n] at hd
-      rcases hd with  H1 | H2
-      . -- 𝒟 c L * L * L ^ n → 𝒟 c L * L ^ n
-        sorry
-      . -- ν L * 𝒟 c L * L ^ n → 𝒟 c L * L ^ n
-        sorry
+  . rw [Set.mem_iUnion] at *
+    rintro ⟨ n, hd ⟩
+    rw [iUnion_to_exists]
+    exists n
 }
+
 
 lemma derL_factor_out(c: 𝒜) (L: Language 𝒜) : ⋃ n ≥ 1, 𝒟 c L * (L ^ (n-1)) = 𝒟 c L * ⋃ n ≥ 1, (L ^ (n-1)) := by {
   sorry
