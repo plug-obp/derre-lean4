@@ -289,6 +289,74 @@ theorem mem_kstar(L: Language 𝒜): w ∈ L∗ ↔ ∃ n: ℕ, w ∈ (L ^ n) :=
   constructor <;> (rintro ⟨n, hw⟩; exact ⟨n, hw⟩)
 }
 
+lemma mem_kstar_empty_in_L (L: Language 𝒜): [] ∈ L → (wx ∈ L∗ ↔ ∃ w₁ w₂, w₁ ∈ L ∧ w₂ ∈ L∗ ∧ w₁ ++ w₂ = wx) := by {
+  intro hE
+  constructor
+  . rintro ⟨n, hwx⟩
+    induction n with
+    | zero => {
+      simp [pow_zero] at hwx
+      simp [hwx]
+      exists []
+      constructor
+      . exact hE
+      . exists []
+        constructor
+        . apply eps_in_star
+        . rfl
+    }
+    | succ n _ => {
+      simp [pow_succ] at hwx
+      rcases hwx with ⟨w₁, w₂, hw₁, hw₂, hwx⟩
+      exists w₁
+      exists w₂
+      constructor
+      . exact hw₁
+      . constructor
+        . rw [mem_kstar]
+          exists n
+        . exact hwx
+    }
+  . rintro ⟨w₁, w₂, hw₁, hw₂, hwx⟩
+    rw [←hwx]
+    rw [mem_kstar]
+    rcases hw₂ with ⟨n, hw₂⟩
+    exists n+1
+    simp [pow_succ]
+    exists w₁
+    exists w₂
+}
+
+lemma append_with_empty_star_eq_star (L: Language 𝒜): L * L∗ = L∗ ↔ [] ∈ L := by {
+  constructor
+  . intro h
+    simp [*] at *
+    have h₂ : [] ∈ L * L∗ := by {
+      rw [h]
+      apply eps_in_star
+     }
+    simp [mul_def, Set.image2] at h₂
+    rcases h₂ with ⟨ w₁, hw₁, w₂, hw₂, hwx⟩
+    simp [nil_append_nil] at hwx
+    rw [hwx.1] at hw₁
+    exact hw₁
+  . intro h
+    ext wx
+    constructor
+    . intro hwx
+      rcases hwx with ⟨ w₁, w₂, hw₁, hw₂, hwx⟩
+      rw [mem_kstar_empty_in_L]
+      exists w₁
+      exists w₂
+      exact h
+    . intro hwx
+      simp [mul_def, Set.image2]
+      exists []
+      constructor
+      . exact h
+      . exists wx
+}
+
 theorem kstar_eq_iSup_pow (l : Language α) : l∗ = ⨆ i : ℕ, l ^ i := by
   ext x
   simp only [mem_iSup, mem_kstar]

@@ -314,83 +314,6 @@ lemma DerL_pow (c: 𝒜) (L: Language 𝒜)(n: ℕ): 𝒟 c (L ^ (n+1)) = 𝒟 c
     exact conc
 }
 
-lemma DerL_star (c: 𝒜) (L: Language 𝒜): 𝒟 c (L∗) = (𝒟 c L) * (L∗) :=
-  calc
-    (𝒟 c L∗) = 𝒟 c (1 + (L⊕)) := by rw [star_eq_eps_union_plus]
-    _ = 𝒟 c 1 + 𝒟 c (L⊕)      := by rw [DerL_union]
-    _ = ∅ + 𝒟 c (L⊕)          := by rw [one_eq_eps, DerL_epsilon]
-    _ = 𝒟 c (L⊕)              := by rw [←zero_eq_empty, zero_add]
-    _ = 𝒟 c (L * (L∗))        := by rw [mul_eq_append, positive_closure]
-    _ = (𝒟 c L) * (L∗) + ν L * 𝒟 c (L∗) := by rw [DerL_concat]
-    _ = (𝒟 c L) * (L∗) := by {
-      rw [add_eq_self_iff]
-      rintro (wx ⟨ w₁, ⟨ w₂, ⟨ ⟨ hw₁, w₁e ⟩ , ⟨ hw₂, hwx ⟩ ⟩ ⟩ ⟩ )
-      simp [*] at *
-      rw [nil_append_word] at hwx
-      exists w₂
-      exists []
-      constructor
-      . simp [kleene_closure_def] at *
-        rcases hw₂ with ⟨ n, powN ⟩
-        induction n with
-        | zero =>
-          exfalso
-          contradiction
-        | succ n ihe =>
-          apply ihe
-          simp [*] at *
-          rw [← powL_n] at powN
-          sorry
-      . constructor
-        . apply eps_in_star
-        . simp [*] at *
-          apply word_append_nil
-    }
-
-
-lemma DerL_star_to' (c: 𝒜) (L: Language 𝒜): 𝒟 c (L∗) ⊆ (𝒟 c L) * (L∗) := by {
-  intros wx hwx
-  rcases hwx with ⟨ n, m ⟩
-  exists wx
-  exists []
-  simp [*] at *
-  constructor
-  . sorry
-  . constructor
-    . apply eps_in_star
-    . apply word_append_nil
-}
-lemma DerL_star' (c: 𝒜) (L: Language 𝒜): 𝒟 c (L∗) = (𝒟 c L) * (L∗) :=
-  calc
-    (𝒟 c L∗) = 𝒟 c (1 + (L⊕)) := by rw [star_eq_eps_union_plus]
-    _ = 𝒟 c 1 + 𝒟 c (L⊕)      := by rw [DerL_union]
-    _ = ∅ + 𝒟 c (L⊕)          := by rw [one_eq_eps, DerL_epsilon]
-    _ = 𝒟 c (L⊕)              := by rw [←zero_eq_empty, zero_add]
-    _ = 𝒟 c (L * (L∗))        := by rw [mul_eq_append, positive_closure]
-    _ = (𝒟 c L) * (L∗) + ν L * 𝒟 c (L∗) := by rw [DerL_concat]
-    _ = (𝒟 c L) * (L∗) := by {
-      rw [add_eq_self_iff]
-      intros wx hwx
-      rcases hwx with ⟨ w₁, ⟨w₂, ⟨ w₁L, w₁ε ⟩ , hw₂, hwx₂⟩⟩
-      simp [*] at *
-      rw [nil_append_word] at hwx₂
-      rw [←hwx₂]
-      apply DerL_star_to' c L hw₂
-    }
-
-lemma DerL_star'' (c: 𝒜) (L: Language 𝒜): 𝒟 c (L∗) = (𝒟 c L) * (L∗) :=
-  calc
-    (𝒟 c L∗) = 𝒟 c { w | ∃ n: ℕ, w ∈ (L ^ n)} := by rw [kleene_closure_def] -- this is equivalent to a big sum Σ₀∞
-    _ = 𝒟 c (L^0) + { w | ∃ n: ℕ, n > 0 → w ∈ 𝒟 c (L ^ n)} := by sorry -- extract one from the sum L^0 ∪ Σ₁∞
-    _ = 𝒟 c (1:Language 𝒜) + { w | ∃ n: ℕ, n > 0 → w ∈ 𝒟 c (L ^ n)} := by rw [pow_zero] -- L^0 = 1
-    _ = ∅ + { w | ∃ n: ℕ, n > 0 → w ∈ 𝒟 c (L ^ n)} := by rw [one_eq_eps, DerL_epsilon]   -- 𝒟 c 1 = ∅
-    _ = { w | ∃ n: ℕ, n > 0 → w ∈ 𝒟 c (L ^ n)} := by rw [←zero_eq_empty, zero_add]       -- ∅ + L = L
-    _ = { w | ∃ n: ℕ, n > 0 → w ∈ 𝒟 c L * (L ^ (n-1)) } := by sorry                       -- 𝒟 c (L^n) = 𝒟 c L * L^(n-1) DerL_pow
-    _ = 𝒟 c L * { w | ∃ n: ℕ, n > 0 → w ∈ (L ^ (n-1)) } := by sorry                       -- Σ₁∞ (D c L) * L^n = (D c L) * Σ₁∞ L^n --- factor out (D c L)
-    _ = 𝒟 c L * { w | ∃ m: ℕ, w ∈ (L ^ m) } := by sorry                                   -- n ∈ ℕ, n > 0 <=> m = n-1, m ∈ ℕ       --- reindex
-    _ = 𝒟 c L * (L∗) := by rw [←kleene_closure_def]                                       -- we get back a kleene closure
-
-
 lemma star_is_iunion (L: Language 𝒜): L∗ = ⋃ n, L ^ n := by {
   ext wx
   rw [kleene_closure_def, Set.mem_iUnion]
@@ -406,31 +329,8 @@ lemma powL_n' (L: Language 𝒜) (hn: n≥1): L ^ (n) = L * (L ^ (n-1)) := by {
     simp [*] at *
 }
 
-lemma union_split_l0' (L: Language 𝒜): ⋃ n, L ^ n = ⋃ n, L^0 ∪ L^(n+1) := by {
-  rw [←Set.union_iUnion_nat_succ]
-
-  sorry
-}
 
 lemma factor_out(L: Language 𝒜) : ⋃ n, L ^ n = L ^ 0 ∪ ⋃ (i : ℕ), L ^ (i + 1) := by rw [←Set.union_iUnion_nat_succ]
-
-lemma union_split_l0 (L: Language 𝒜): ⋃ n, L ^ n = ⋃ m ≥ 1, L^0 ∪ L^m := by {
-  ext wx
-  simp only [Set.mem_iUnion, Set.mem_union]
-  constructor
-  . intro H
-    exists 1
-    exists Nat.zero_lt_one
-    sorry
-  . rintro ⟨ m, ⟨ hm, ( h₁ | h₂ ) ⟩ ⟩
-    . exists 0
-    . exists m
-}
-
---Set.union_iUnion : s ∪ ⋃ (i : ι), t i = ⋃ (i : ι), s ∪ t i
-lemma union_iUnion_out (L: Language 𝒜):
-  ⋃ n ≥ 1, (1:Language 𝒜) ∪ L ^ n = (1: Language 𝒜) ∪ ⋃ n ≥ 1, L^n
-:= by sorry --rw [←Set.union_iUnion]
 
 lemma union_factor_out (L: Language 𝒜): ⋃ n ≥ 1, L^0 ∪ L ^ n = L^0 ∪ ⋃ n ≥ 1,  L^n := by {
   ext wx
@@ -455,13 +355,7 @@ lemma union_factor_out (L: Language 𝒜): ⋃ n ≥ 1, L^0 ∪ L ^ n = L^0 ∪ 
 
 lemma union_eq_plus (L₁ L₂: Language 𝒜): L₁ ∪ L₂ = L₁ + L₂ := rfl
 
-lemma derL_factor_in(c: 𝒜) (L: Language 𝒜): 𝒟 c (⋃ n ≥ 1, L ^ n) = ⋃ n ≥ 1, 𝒟 c (L ^ n) := by {
-  ext wx
-  simp [Set.mem_iUnion, DerL_def, Set.univ] at *
-  sorry
-}
-
-lemma iUnion_to_exists (c: 𝒜) (L: Language 𝒜): wx ∈ 𝒟 c (⋃ (n : ℕ), L ^ (n + 1)) ↔ ∃ k, wx ∈ 𝒟 c (L ^ (k + 1)) := by {
+lemma mem_DerL_iUnion (c: 𝒜) (L: Language 𝒜): wx ∈ 𝒟 c (⋃ (n : ℕ), L ^ (n + 1)) ↔ ∃ k, wx ∈ 𝒟 c (L ^ (k + 1)) := by {
   simp [Set.mem_iUnion]
   constructor
   . rintro ⟨ L₁, ⟨ ⟨ n, m ⟩ , hwx ⟩ ⟩
@@ -488,13 +382,8 @@ lemma DerL_iUnion(c: 𝒜) (L: Language 𝒜): 𝒟 c (⋃ n, L ^ (n + 1)) = ⋃
     exact hh
   . rw [Set.mem_iUnion] at *
     rintro ⟨ n, hd ⟩
-    rw [iUnion_to_exists]
+    rw [mem_DerL_iUnion]
     exists n
-}
-
-
-lemma derL_factor_out(c: 𝒜) (L: Language 𝒜) : ⋃ n ≥ 1, 𝒟 c L * (L ^ (n-1)) = 𝒟 c L * ⋃ n ≥ 1, (L ^ (n-1)) := by {
-  sorry
 }
 
 instance: One (Set (Word 𝒜)) := ⟨{[]}⟩
@@ -555,17 +444,7 @@ lemma pow_iUnion' (c: 𝒜) (L: Language 𝒜) : ⋃ n, 𝒟 c (L ^ (n+1)) = ⋃
     exact hwx
 }
 
-lemma reindex(L: Language 𝒜): ⋃ n ≥ 1, (L ^ (n-1)) = ⋃ m, (L ^ m) := by {
-  ext wx
-  simp [Set.mem_iUnion] at *
-  constructor
-  . rintro ⟨ n, ⟨ _, hwx ⟩ ⟩
-    exists (n-1)
-  . rintro ⟨ m, hwx ⟩
-    exists (m+1)
-    rw [Nat.add_sub_cancel]
-    simp [*] at *
-}
+
 
 -- D c L∗
 --        = D c (L⁰ + L¹ + L² + L³ + ...)
@@ -576,26 +455,7 @@ lemma reindex(L: Language 𝒜): ⋃ n ≥ 1, (L ^ (n-1)) = ⋃ m, (L ^ m) := by
 --        = D c L * L⁰ + D c L * L¹ + D c L * L² + D c L * L³ + ...
 --        = D c L * (L⁰ + L¹ + L² + L³ + ...)
 --        = D c L * L∗
-
-lemma DerL_star''' (c: 𝒜) (L: Language 𝒜): 𝒟 c (L∗) = (𝒟 c L) * (L∗) :=
-  calc
-    (𝒟 c L∗) = 𝒟 c (⋃ n, L ^ n)                   := by rw [star_is_iunion] -- this is equivalent to a big union       L∗ = ⋃ n, L^n
-    _ = 𝒟 c (⋃ n ≥ 1, L^0 ∪ L ^ n)                 := by rw [union_split_l0] -- split the big union inside ⋃ n, L^n = ⋃ n>0, L^0 ∪ L^(n-1)
-    _ = 𝒟 c (L^0 + (⋃ n ≥ 1, L ^ n))               := by rw [union_factor_out, union_eq_plus] -- factor out  ⋃ n>0, L^0 ∪ L^(n-1) = L^0 + ⋃ n>0, L^(n-1)
-    _ = 𝒟 c (L^0) + 𝒟 c (⋃ n ≥ 1, L ^ n)           := by rw [DerL_union] -- apply derivative to the union
-    _ = 𝒟 c (1:Language 𝒜) + 𝒟 c (⋃ n ≥ 1, L ^ n) := by rw [pow_zero] -- L^0 = 1
-    _ = ∅ + 𝒟 c (⋃ n ≥ 1, L ^ n)                   := by rw [one_eq_eps, DerL_epsilon]   -- 𝒟 c 1 = ∅
-    _ = 𝒟 c (⋃ n ≥ 1, L ^ n)                       := by rw [←zero_eq_empty, zero_add]       -- ∅ + L = L
-    _ = ⋃ n ≥ 1, 𝒟 c (L ^ n)                       := by exact derL_factor_in c L -- push 𝒟 inside the union
-    _ = ⋃ n ≥ 1, 𝒟 c (L ^ ((n - 1) + 1))           := by rw [lsub_add_cancel] -- n > 0 => n-1+1 = n
-    _ = ⋃ n ≥ 1, 𝒟 c L * (L ^ (n-1))               := by rw [pow_iUnion] -- 𝒟 c (L^n+1) = 𝒟 c L * L^n DerL_pow
-    _ = 𝒟 c L * ⋃ n ≥ 1, (L ^ (n-1))               := by rw [derL_factor_out] -- factor out (D c L)
-    _ = 𝒟 c L * ⋃ m, L ^ m                         := by rw [reindex] -- n ∈ ℕ, n > 0 <=> m = n-1, m ∈ ℕ       --- reindex
-    _ = 𝒟 c L * (L∗)                               := by rw [←star_is_iunion] -- rw [←kleene_closure_def] -- we get back a kleene closure
-
-
-
-lemma DerL_star4 (c: 𝒜) (L: Language 𝒜): 𝒟 c (L∗) = (𝒟 c L) * (L∗) :=
+lemma DerL_star (c: 𝒜) (L: Language 𝒜): 𝒟 c (L∗) = (𝒟 c L) * (L∗) :=
   calc
     (𝒟 c L∗) = 𝒟 c (⋃ n, L ^ n)                      := by rw [star_is_iunion] -- this is equivalent to a big union       L∗ = ⋃ n, L^n
     _ = 𝒟 c (L^0 + (⋃ n, L ^ (n + 1)))               := by rw [←Set.union_iUnion_nat_succ, union_eq_plus] -- factor out  ⋃ n>0, L^0 ∪ L^(n-1) = L^0 + ⋃ n>0, L^(n-1)

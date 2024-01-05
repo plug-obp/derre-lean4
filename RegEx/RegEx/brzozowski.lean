@@ -236,18 +236,6 @@ lemma D_star: ∀ c: 𝒜, ∀ e: Regex 𝒜, 𝒟 c (e★) = (𝒟 c e) ⋅ (e�
 @[simp]
 lemma D_eps: ∀ (c: 𝒜), 𝒟 c ε = (Φ: Regex 𝒜)⋅(Φ★) := λ _ => rfl
 
-/-
- The correctness theorem has the form that
-  The language of the derivative (`L (D c re)`) and the derivative of the language (`D c (L re)`) are the same.
-  That is `∀ w, w ∈ L (D c re) ↔ w ∈ D c (L re)`
-
-  We will approach this proof by stating and proving separate lemmas for each direction of the bi-implication
-  This will get us:
-  1. L (D c re) ⊆ D c (L re)
-  2. D c (L re) ⊆ L (D c re)
-  3. thus L (D c re) = D c (L re)
--/
-
 theorem LD_imp_DL_token: ∀ (c: 𝒜) (w: Word 𝒜), w ∈ ℒ (𝒟 c (τ t)) → w ∈ 𝒟 c (ℒ (τ t)) := by {
   intros c w Hw
   simp [DerL_singleton, D_token] at *
@@ -261,7 +249,7 @@ theorem LD_imp_DL_token: ∀ (c: 𝒜) (w: Word 𝒜), w ∈ ℒ (𝒟 c (τ t))
     exact Hw
 }
 
-lemma delta_eq_hasEmpty(e: Regex 𝒜):  ℒ (δ e) = ν (ℒ e) := by {
+lemma δ_eq_ν(e: Regex 𝒜):  ℒ (δ e) = ν (ℒ e) := by {
   induction e with
   | empty =>
     simp [δ, ℒ, ν]
@@ -293,97 +281,13 @@ lemma delta_eq_hasEmpty(e: Regex 𝒜):  ℒ (δ e) = ν (ℒ e) := by {
     rfl
 }
 
-theorem LD_imp_DL_concat {c:𝒜} {w: Word 𝒜}
-(ihe₁: w ∈ ℒ (𝒟 c e₁) → w ∈ 𝒟 c (ℒ e₁))
-(ihe₂: w ∈ ℒ (𝒟 c e₂) → w ∈ 𝒟 c (ℒ e₂))
-: w ∈ ℒ (𝒟 c (e₁⋅e₂)) → w ∈ 𝒟 c (ℒ (e₁⋅e₂)) := by {
-  intro H
-  simp [*] at *
-  simp [DerL_concat]
-  rw [←delta_eq_hasEmpty]
-  sorry
-}
-
-theorem LD_imp_DL: ∀ (c: 𝒜)(w: Word 𝒜),  w ∈ ℒ (𝒟 c re) → w ∈ 𝒟 c (ℒ re) := by {
-  intro c w
-  induction re with
-  | empty =>
-    simp [ℒ]
-    tauto
-  | token t =>
-    apply LD_imp_DL_token
-  | concatenation e₁ e₂ ihe₁ ihe₂ =>
-    apply (LD_imp_DL_concat ihe₁ ihe₂)
-  | union e₁ e₂ ihe₁ ihe₂ =>
-    simp [ℒ, derL] at *
-    intro H
-    cases H with
-    | inl Hw =>
-      apply Or.inl
-      apply ihe₁
-      exact Hw
-    | inr Hw =>
-      apply Or.inr
-      apply ihe₂
-      exact Hw
-  | star e ihe =>
-    simp [derL] at *
-    intro Hw
-    sorry
-}
-
-lemma DL_imp_LD_concat
-{c:𝒜}
-{w: Word 𝒜}
-(ihe₁: w ∈ 𝒟 c (ℒ e₁) → w ∈ ℒ (𝒟 c e₁))
-(ihe₂: w ∈ 𝒟 c (ℒ e₂) → w ∈ ℒ (𝒟 c e₂))
-: w ∈ 𝒟 c (ℒ (e₁⋅e₂)) → w ∈ ℒ (𝒟 c (e₁⋅e₂)) := by {
-  sorry
-}
-
-theorem DL_imp_LD: ∀ (c: 𝒜) (w: Word 𝒜), w ∈ 𝒟 c (ℒ r) → w ∈ ℒ (𝒟 c r) := by {
-  intros c w
-  induction r with
-  | empty =>
-    simp [ℒ, D]
-    tauto
-  | token t =>
-    intro hw
-    simp [ℒ, D]
-    cases hw
-    simp [*]
-    rfl
-  | concatenation e₁ e₂ ihe₁ ihe₂ =>
-    apply DL_imp_LD_concat ihe₁ ihe₂
-  | union e₁ e₂ ihe₁ ihe₂ =>
-    intro hw
-    simp [ℒ, D] at *
-    cases hw with
-    | inl hw =>
-      apply Or.inl
-      apply ihe₁
-      exact hw
-    | inr hw =>
-      apply Or.inr
-      apply ihe₂
-      exact hw
-  | star e ihe =>
-    intro hw
-    simp [ℒ, D] at *
-    sorry
-}
-
-theorem LD_iff_DL: ∀ (c: 𝒜) (w: Word 𝒜),  w ∈ ℒ (𝒟 c r) ↔ w ∈ 𝒟 c (ℒ r) := by {
-  intro c w
-  constructor
-  apply LD_imp_DL
-  apply DL_imp_LD
-}
-
-theorem LD_sseq_DL (c: 𝒜) (r: Regex 𝒜): ℒ (𝒟 c r) ⊆ 𝒟 c (ℒ r) := LD_imp_DL c
-
-theorem DL_sseq_LD (c: 𝒜) (r: Regex 𝒜): 𝒟 c (ℒ r) ⊆ ℒ (𝒟 c r) := DL_imp_LD c
-
+/-
+ The correctness theorem has the form that
+  The language of the derivative (`L (D c r)`) and the derivative of the language (`D c (L r)`) are the same.
+  We will approach the proof by induction on the structure of the Regex r.
+  Then for each case we unfold the derivative and retrieve the denotation from ℒ.
+  Now in the language world we simply use the lemmas defined for languages.
+-/
 theorem LD_eq_DL (c: 𝒜) (r: Regex 𝒜): ℒ (𝒟 c r) = 𝒟 c (ℒ r) := by {
   induction r with
   | empty =>
@@ -395,7 +299,7 @@ theorem LD_eq_DL (c: 𝒜) (r: Regex 𝒜): ℒ (𝒟 c r) = 𝒟 c (ℒ r) := b
     split <;> simp
   | concatenation e₁ e₂ ihe₁ ihe₂ =>
     simp [ℒ, D]
-    simp [DerL_concat, ←delta_eq_hasEmpty]
+    simp [DerL_concat, ←δ_eq_ν]
     rw [←ihe₁, ←ihe₂]
     rfl
   | union e₁ e₂ ihe₁ ihe₂ =>
