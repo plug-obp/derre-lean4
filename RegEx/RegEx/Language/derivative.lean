@@ -485,10 +485,11 @@ lemma DerL_iUnion(c: 𝒜) (L: Language 𝒜): 𝒟 c (⋃ n, L ^ (n + 1)) = ⋃
       rw [DerL_concat] at hd
       rw [DerL_pow] at hd
       rw [powL_n] at hd
-      -- wx ∈ 𝒟 c L * (L * L ^ n) + ν L * (𝒟 c L * L ^ n)
-      -- wx ∈ (𝒟 c L * L) * L ^ n + (ν L * 𝒟 c L) * L ^ n
-      -- wx ∈ ( (𝒟 c L * L) + (ν L * 𝒟 c L) ) * L ^ n
-      sorry
+      rcases hd with  H1 | H2
+      . -- 𝒟 c L * L * L ^ n → 𝒟 c L * L ^ n
+        sorry
+      . -- ν L * 𝒟 c L * L ^ n → 𝒟 c L * L ^ n
+        sorry
 }
 
 lemma derL_factor_out(c: 𝒜) (L: Language 𝒜) : ⋃ n ≥ 1, 𝒟 c L * (L ^ (n-1)) = 𝒟 c L * ⋃ n ≥ 1, (L ^ (n-1)) := by {
