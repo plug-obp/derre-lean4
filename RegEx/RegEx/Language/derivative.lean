@@ -2,6 +2,7 @@ import «RegEx».Language.language
 import «RegEx».Language.helpers
 import Mathlib.Data.Set.UnionLift
 import Mathlib.Order.Hom.CompleteLattice
+import Mathlib.Data.Set.Pointwise.Basic
 
 class Derivative (α: Type*) (β: Type*) where
   der: α → β → β
@@ -306,7 +307,7 @@ lemma DerL_pow (c: 𝒜) (L: Language 𝒜)(n: ℕ): 𝒟 c (L ^ (n+1)) = 𝒟 c
     calc
       𝒟 c L * (L * L ^ n) + ν L * (𝒟 c L * L ^ n)
         = (𝒟 c L * L) * L ^ n + (ν L * 𝒟 c L) * L ^ n := by simp [←mul_assoc]
-      _ = (𝒟 c L * L + ν L * 𝒟 c L) * L ^ n := by rw [add_mul]
+      _ = (𝒟 c L * L + ν L * 𝒟 c L) * L ^ n := by rw [right_distrib]
       _ = (𝒟 c (L * L)) * L ^ n := by rw [← DerL_concat]
       _ = (𝒟 c L * L) * L ^ n := by rw [DerL_concat_self]
       _ = 𝒟 c L * (L * L ^ n) := by rw [mul_assoc]
@@ -496,10 +497,15 @@ lemma derL_factor_out(c: 𝒜) (L: Language 𝒜) : ⋃ n ≥ 1, 𝒟 c L * (L ^
   sorry
 }
 
---*****
-lemma derL_factor_out'(c: 𝒜) (L: Language 𝒜) : ⋃ n, 𝒟 c L * (L ^ n) = 𝒟 c L * ⋃ n, (L ^ n) := by {
-  sorry
-}
+instance: One (Set (Word 𝒜)) := ⟨{[]}⟩
+instance: Mul (Set (Word 𝒜)) := ⟨ concatenationL ⟩
+instance: Mul (Word 𝒜) := ⟨ (. ++ .) ⟩
+
+--***** This is an instance of left distributivity (rw [left_distrib])
+lemma derL_factor_out'(c: 𝒜) (L: Language 𝒜) :
+(𝒟 c L) * ⋃ n, (L ^ n) = ⋃ n, (𝒟 c L) * (L ^ n)
+:= (Set.mul_iUnion (𝒟 c L) (λ n => npowRec n L))
+
 
 lemma lsub_add_cancel (c: 𝒜) (L: Language 𝒜): ⋃ n ≥ 1, 𝒟 c (L ^ n) = ⋃ n ≥ 1, 𝒟 c (L ^ (n - 1 + 1)) := by {
   ext wx
