@@ -82,10 +82,7 @@ lemma δ₁: ∀ w: Word 𝒜, w ∈ ℒ (δ r) → w = [] := by {
     | inr h =>
       apply ih₂
       exact h
-  | star e _ =>
-    simp [δ]
-    intros _ h
-    apply h
+  | star _ _ => simp [δ]
 }
 
 /-
@@ -276,9 +273,8 @@ lemma δ_eq_ν(e: Regex 𝒜):  ℒ (δ e) = ν (ℒ e) := by {
   | union e₁ e₂ ihe₁ ihe₂ =>
     simp [δ, ℒ, ν_union] at *
     rw [ihe₁, ihe₂]
-  | star e _ =>
-    simp [δ, ℒ, ν_star] at *
-    rfl
+  | star _ _ => simp [δ, ℒ, ν_star] at *
+
 }
 
 /-

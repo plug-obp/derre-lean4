@@ -43,14 +43,9 @@ def ℒ: Regex 𝒜 → Language 𝒜
 
 
 -- ε represents the language consisting only of the empty word.
-lemma words_in_L_ε (w: Word 𝒜): w ∈ ℒ ε ↔ w = [] := by {
-  simp [ℒ, Lε]
-}
+lemma mem_l_eps (w: Word 𝒜): w ∈ ℒ ε ↔ w = [] := by simp [ℒ]
 
-lemma eps_denotes: @ℒ 𝒜 ε = 1 := by {
-  simp [ℒ]
-  rfl
-}
+lemma eps_denotes: @ℒ 𝒜 ε = 1 := by simp [ℒ]
 
 /--!
 
@@ -74,7 +69,7 @@ lemma concatenation_denotes: ∀ e₁ e₂: Regex 𝒜, ℒ (e₁ ⋅ e₂) = �
 lemma pow_denotes: ∀ e: Regex 𝒜, ℒ (e^n) = (ℒ e)^n := by {
   intro e
   induction n with
-  | zero => simp [ℒ]; rfl
+  | zero => simp [ℒ];
   | succ n ih => simp [ℒ]; rw [←ih]; rfl
 }
 
@@ -82,20 +77,16 @@ lemma pow_denotes: ∀ e: Regex 𝒜, ℒ (e^n) = (ℒ e)^n := by {
 lemma star_denotes: ∀ e: Regex 𝒜, ℒ (e★) = (ℒ e)∗ := λ _ => rfl
 
 @[simp]
-lemma eps_star_denotes: @ℒ 𝒜 (ε★) = Lε := by simp [ℒ]
+lemma eps_star_denotes: @ℒ 𝒜 (ε★) = 1 := by simp [ℒ]
 
 @[simp]
 lemma re_ε_concatenation: ∀ e: Regex 𝒜, ℒ (ε ⋅ e) = ℒ e := by {
   simp [ℒ]
-  intro _
-  apply one_mul
 }
 
 @[simp]
 lemma re_concatenation_ε: ∀ e: Regex 𝒜, ℒ (e ⋅ ε) = ℒ e := by {
   simp [ℒ]
-  intro e
-  apply mul_one
 }
 
 @[simp]

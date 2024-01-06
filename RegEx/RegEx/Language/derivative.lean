@@ -1,5 +1,4 @@
 import «RegEx».Language.language
-import «RegEx».Language.helpers
 import Mathlib.Data.Set.UnionLift
 import Mathlib.Order.Hom.CompleteLattice
 import Mathlib.Data.Set.Pointwise.Basic
@@ -11,24 +10,29 @@ prefix:1024 "𝒟" => Derivative.der
 /--!
 To write the correctness of the regex derivatiev, `DerL` defines derivative for a language (denotation side).
 The derivative of a language L wrt a character c is the set of all words w for which c⋅w is in L
+Sometimes this operation is called a residual.
 -/
 def derL (c: 𝒜) (L: Language 𝒜) : Language 𝒜 := { w | (c :: w) ∈ L }
 instance : Derivative 𝒜 (Language 𝒜) := ⟨derL⟩
 instance : Derivative 𝒜 (Set (Word 𝒜)) := ⟨derL⟩
 
-lemma DerL_def (c: 𝒜) (L: Language 𝒜) : 𝒟 c L = { w | (c :: w) ∈ L } := rfl
-lemma DerL_empty (c: 𝒜) : 𝒟 c (∅: Language 𝒜) = ∅ := by {
-  simp [DerL_def]
-  rfl
-}
-lemma DerL_epsilon (c: 𝒜) : 𝒟 c Lε = (∅: Language 𝒜) := by {
-  ext w₁
-  constructor <;> (intro _; contradiction)
-}
+lemma DerL_def (c: 𝒜) (L: Language 𝒜) :
+  𝒟 c L = { w | (c :: w) ∈ L }
+:= rfl
 
-lemma DerL_singleton_eq(c: 𝒜): 𝒟 c {[c]} = Lε := by {
+lemma DerL_empty (c: 𝒜) :
+  𝒟 c (∅: Language 𝒜) = ∅
+:= by rfl
+
+lemma DerL_epsilon (c: 𝒜) :
+  𝒟 c 1 = (∅: Language 𝒜)
+:= by ext w₁; constructor <;> (intro _; contradiction)
+
+lemma DerL_singleton_eq(c: 𝒜):
+  𝒟 c {[c]} = (1: Language 𝒜)
+:= by {
   ext w₁
-  simp [DerL_def, Lε]
+  simp [DerL_def]
   constructor
   . intro H
     apply H
@@ -38,7 +42,8 @@ lemma DerL_singleton_eq(c: 𝒜): 𝒟 c {[c]} = Lε := by {
 }
 
 lemma DerL_singleton_neq(c: 𝒜) (d: 𝒜)(hne: c ≠ d) :
-  𝒟 c {[d]} = (∅: Language 𝒜) := by {
+  𝒟 c {[d]} = (∅: Language 𝒜)
+:= by {
   ext w₁
   simp [DerL_def]
   constructor
@@ -51,14 +56,17 @@ lemma DerL_singleton_neq(c: 𝒜) (d: 𝒜)(hne: c ≠ d) :
 }
 
 lemma DerL_singleton(c: 𝒜) (d: 𝒜)[hdeq: Decidable (c = d)] :
-  𝒟 c {[d]} = (if c = d then Lε else ∅) := by {
+  𝒟 c {[d]} = (if c = d then (1: Language 𝒜) else ∅)
+:= by {
   ext w₁
   split
   next cd => simp [cd, DerL_singleton_eq]
   next cnd => simp [DerL_singleton_neq _ _ cnd]
 }
 
-lemma der_head_single(w: Word 𝒜): c = x → w ∈ 𝒟 c ({[x]}: Language 𝒜) → w = [] := by {
+lemma der_head_single(w: Word 𝒜):
+  c = x → w ∈ 𝒟 c ({[x]}: Language 𝒜) → w = []
+:= by {
   intro H Hw
   rw [H] at Hw
   simp [DerL_singleton_eq] at *
@@ -85,10 +93,7 @@ lemma ν_empty: ν (∅: Language 𝒜) = ∅ := by {
     contradiction
 }
 
-lemma ν_epsilon: ν Lε = (1: Language 𝒜) := by {
-  simp [ν_def, Lε]
-  rfl
-}
+lemma ν_epsilon: ν 1 = (1: Language 𝒜) := by simp [ν_def]; rfl
 
 lemma ν_concat (L₁ L₂: Language 𝒜): ν (L₁ * L₂) = (ν L₁ * ν L₂) := by {
   simp [ν_def]
@@ -147,7 +152,7 @@ lemma ν_union (L₁ L₂: Language 𝒜): ν (L₁ + L₂) = (ν L₁ + ν L₂
 }
 
 lemma ν_star (L: Language 𝒜): ν (L∗) = (1: Language 𝒜) := by {
-  simp [ν_def, Lε]
+  simp [ν_def]
   ext w
   constructor
   . intro H
@@ -414,23 +419,7 @@ lemma lsub_add_cancel (c: 𝒜) (L: Language 𝒜): ⋃ n ≥ 1, 𝒟 c (L ^ n) 
     exact hn
 }
 
-lemma pow_iUnion (c: 𝒜) (L: Language 𝒜) : ⋃ n ≥ 1, 𝒟 c (L ^ ((n-1)+1)) = ⋃ n ≥ 1, 𝒟 c L * (L ^ (n-1)) := by {
-  ext wx
-  simp [Set.mem_iUnion] at *
-  constructor
-  . rintro ⟨ n, ⟨ hn, hwx ⟩ ⟩
-    exists n
-    exists hn
-    rw [DerL_pow] at hwx
-    exact hwx
-  . rintro ⟨ n, ⟨ hn, hwx ⟩ ⟩
-    exists n
-    exists hn
-    rw [DerL_pow]
-    exact hwx
-}
-
-lemma pow_iUnion' (c: 𝒜) (L: Language 𝒜) : ⋃ n, 𝒟 c (L ^ (n+1)) = ⋃ n, 𝒟 c L * (L ^ n) := by {
+lemma pow_iUnion (c: 𝒜) (L: Language 𝒜) : ⋃ n, 𝒟 c (L ^ (n+1)) = ⋃ n, 𝒟 c L * (L ^ n) := by {
   ext wx
   simp [Set.mem_iUnion] at *
   constructor
@@ -443,8 +432,6 @@ lemma pow_iUnion' (c: 𝒜) (L: Language 𝒜) : ⋃ n, 𝒟 c (L ^ (n+1)) = ⋃
     rw [DerL_pow]
     exact hwx
 }
-
-
 
 -- D c L∗
 --        = D c (L⁰ + L¹ + L² + L³ + ...)
@@ -461,9 +448,9 @@ lemma DerL_star (c: 𝒜) (L: Language 𝒜): 𝒟 c (L∗) = (𝒟 c L) * (L∗
     _ = 𝒟 c (L^0 + (⋃ n, L ^ (n + 1)))               := by rw [←Set.union_iUnion_nat_succ, union_eq_plus] -- factor out  ⋃ n>0, L^0 ∪ L^(n-1) = L^0 + ⋃ n>0, L^(n-1)
     _ = 𝒟 c (L^0) + 𝒟 c (⋃ n, L ^ (n + 1))           := by rw [DerL_union] -- apply derivative to the union
     _ = 𝒟 c (1:Language 𝒜) + 𝒟 c (⋃ n, L ^ (n + 1)) := by rw [pow_zero] -- L^0 = 1
-    _ = ∅ + 𝒟 c (⋃ n, L ^ (n + 1))                   := by rw [one_eq_eps, DerL_epsilon]   -- 𝒟 c 1 = ∅
-    _ = 𝒟 c (⋃ n, L ^ (n + 1))                       := by rw [←zero_eq_empty, zero_add]       -- ∅ + L = L
+    _ = ∅ + 𝒟 c (⋃ n, L ^ (n + 1))                   := by rw [DerL_epsilon]   -- 𝒟 c 1 = ∅
+    _ = 𝒟 c (⋃ n, L ^ (n + 1))                       := by rw [←zero_def, zero_add]       -- ∅ + L = L
     _ = ⋃ n, 𝒟 c (L ^ (n+1))                          := by rw [DerL_iUnion] -- push 𝒟 inside the union DerL_iUnion
-    _ = ⋃ n, 𝒟 c L * (L ^ n)                          := by rw [pow_iUnion'] -- 𝒟 c (L^n+1) = 𝒟 c L * L^n DerL_pow
+    _ = ⋃ n, 𝒟 c L * (L ^ n)                          := by rw [pow_iUnion] -- 𝒟 c (L^n+1) = 𝒟 c L * L^n DerL_pow
     _ = 𝒟 c L * ⋃ n, (L ^ n)                         := by rw [derL_factor_out'] -- factor out (D c L)
     _ = 𝒟 c L * (L∗)                                  := by rw [←star_is_iunion] -- rw [←kleene_closure_def] -- we get back a kleene closure

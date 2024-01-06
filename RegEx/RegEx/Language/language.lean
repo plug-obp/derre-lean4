@@ -160,19 +160,13 @@ instance Language.hadd: HAdd (Language 𝒜) (Set (Word 𝒜)) (Language 𝒜) :
 instance Language.mul: Mul (Language 𝒜) := ⟨ concatenationL ⟩
 instance Language.hmul: HMul (Language 𝒜) (Set (Word 𝒜)) (Language 𝒜) := ⟨ concatenationL ⟩
 
-theorem zero_def : (0 : Language α) = (∅ : Set _) :=
-  rfl
+lemma zero_def:
+  (0: Language 𝒜) = ∅
+:= rfl
 
-lemma zero_eq_empty: (0: Language 𝒜) = ∅ := rfl
-
-theorem one_def : (1 : Language α) = ({[]} : Set (Word α)) :=
-  rfl
-
--- The language of ε is the singleton set { [] }
---  L ε = { [] }
-def Lε : Language 𝒜  := { [] }
-
-lemma one_eq_eps: (1: Language 𝒜) = Lε := rfl
+theorem one_def :
+  (1 : Language α) = ({[]} : Language α)
+:= rfl
 
 theorem add_def (l m : Language α) : l + m = (l ∪ m : Set (List α)) :=
   rfl
@@ -218,6 +212,11 @@ theorem cons_not_mem (h a: 𝒜)(w : Word 𝒜) : h::w ∈ ({[a]}: Language 𝒜
     rw [H.2]
 }
 
+lemma ncast: ∀ (n : ℕ), NatCast.natCast (n + 1) = NatCast.natCast n + 1 := by {
+  intro n
+  cases n <;> simp [Nat.cast, add_def, zero_def]
+}
+
 instance Language.toSemiring : Semiring (Language 𝒜) where
   add := (· + ·)
   add_assoc := Set.union_assoc
@@ -230,19 +229,11 @@ instance Language.toSemiring : Semiring (Language 𝒜) where
   zero_mul _ := Set.image2_empty_left
   mul_zero _ := Set.image2_empty_right
   one := 1
-  one_mul l := by {
-    simp [mul_def, one_def, Set.image]
-    conv in ([] ++ _) => rw [List.nil_append]
-    simp [Set.image]
-  }
-  mul_one l := by {
-    simp [mul_def, one_def, Set.image]
-    conv in (_ ++ []) => rw [List.append_nil]
-    simp [Set.image]
-  }
+  one_mul L := by rw [mul_def]; apply Set.image2_left_identity List.nil_append
+  mul_one L := by rw [mul_def]; apply Set.image2_right_identity List.append_nil
   natCast n := if n = 0 then 0 else 1
   natCast_zero := rfl
-  natCast_succ n := by cases n <;> simp [Nat.cast, add_def, zero_def]
+  natCast_succ n := by cases n <;> simp [Nat.cast, add_def, zero_def]; rw [Set.empty_union]
   left_distrib _ _ _ := Set.image2_union_right
   right_distrib _ _ _ := Set.image2_union_left
 
@@ -472,7 +463,7 @@ lemma concatenation_empty: ∀ L: Language 𝒜, L ++ ∅ = ∅ := by apply mul_
 lemma empty_pow: n > 0 → (∅: Language 𝒜) ^ n = ∅ := by apply zero_pow
 
 @[simp]
-lemma empty_star_is_ε: (∅: Language 𝒜)∗ = Lε := by {
+lemma empty_star_is_ε: (∅: Language 𝒜)∗ = 1 := by {
   apply kstar_zero
 }
 
@@ -480,18 +471,7 @@ lemma empty_star_is_ε: (∅: Language 𝒜)∗ = Lε := by {
 lemma ε_concatenation: ∀ L: Language 𝒜, 1 * L = L := by apply one_mul
 
 @[simp]
-lemma concatenation_ε: ∀ L: Language 𝒜, L ++ Lε = L := by apply mul_one
-
-lemma word_inε_is_ε (w: Word 𝒜): w ∈ (1: Language 𝒜) ↔ w = [] := by {
-  constructor
-  . simp [one_def]
-    intro Hw
-    apply Hw
-  . intro Hw
-    rw [Hw]
-    simp [one_def]
-    rfl
-}
+lemma concatenation_ε: ∀ L: Language 𝒜, L ++ 1 = L := by apply mul_one
 
 lemma L_one_mul: ∀ L: Language 𝒜, 1 * L = 1 ↔ L = 1 := by simp [one_mul]
 
@@ -518,26 +498,24 @@ lemma one_mul_one: ∀ L₁ L₂: Language 𝒜, (L₁ * L₂ = 1) → (L₁ = 1
   exact H
 }
 
-lemma ε_pow: ∀ n: ℕ, (Lε: Language 𝒜) ^ n = Lε := by apply one_pow
+lemma ε_pow: ∀ n: ℕ, (1: Language 𝒜) ^ n = 1 := by apply one_pow
 
 @[simp]
-lemma ε_star: (Lε: Language 𝒜)∗ = Lε := by apply kstar_one
+lemma ε_star: (1: Language 𝒜)∗ = 1 := by apply kstar_one
 
 @[simp]
-lemma ε_positive_closure: (Lε: Language 𝒜) ⊕ = Lε := by simp [positive_closure, ε_star]
+lemma ε_positive_closure: (1: Language 𝒜) ⊕ = 1 := by simp [positive_closure, ε_star]
 
 @[simp]
-lemma ε_pow_positive_closure: ∀ n: ℕ, (Lε: Language 𝒜) ^ n ⊕ = Lε := by {
+lemma ε_pow_positive_closure: ∀ n: ℕ, (1: Language 𝒜) ^ n ⊕ = 1 := by {
   intro n
   simp [positive_closure, ε_pow, ε_concatenation, ε_star]
 }
 
-lemma tail_empty_singleton: {w: Word 𝒜 | (c :: w) ∈ ( {[c]}: Language 𝒜)} = Lε := by {
-  ext _
-  simp [Lε]
+lemma tail_empty_singleton: {w: Word 𝒜 | (c :: w) ∈ ( {[c]}: Language 𝒜)} = (1: Language 𝒜) := by {
+  ext wx
   constructor
-  . intro H
-    rw [H]
+  . rintro ⟨_⟩
     rfl
   . intro H
     tauto
