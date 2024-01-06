@@ -168,27 +168,33 @@ theorem one_def :
   (1 : Language α) = ({[]} : Language α)
 := rfl
 
-theorem add_def (l m : Language α) : l + m = (l ∪ m : Set (List α)) :=
-  rfl
+theorem add_def (L₁ L₂ : Language α):
+  L₁ + L₂ = L₁ ∪ L₂
+:= rfl
 
-theorem mul_def (l m : Language α) : l * m = Set.image2 (· ++ ·) l m :=
-  rfl
-
-@[simp]
-theorem not_mem_zero (x : Word α) : x ∉ (0 : Language α) :=
-  id
+theorem mul_def (l m : Language α):
+  l * m = Set.image2 (· ++ ·) l m
+:= rfl
 
 @[simp]
-theorem mem_one (x : Word α) : x ∈ (1 : Language α) ↔ x = [] := by rfl
+theorem not_mem_zero (x : Word α):
+  x ∉ (0 : Language α)
+:= id
 
 @[simp]
-theorem mem_one' (x : Word α) : x ∈ ({[]} : Language α) ↔ x = [] := by rfl
+theorem mem_one (x : Word α):
+  x ∈ (1 : Language α) ↔ x = []
+:= by rfl
 
 @[simp]
-theorem mem_letter (w : Word 𝒜) : w ∈ ({[a]}: Language 𝒜) ↔ w = [a] := by rfl
+theorem mem_letter (w : Word 𝒜):
+  w ∈ ({[a]}: Language 𝒜) ↔ w = [a]
+:= by rfl
 
 @[simp]
-theorem mem_cons (h: 𝒜)(w : Word 𝒜) : h::w ∈ ({[h]}: Language 𝒜) ↔ w = [] := by {
+theorem mem_cons (h: 𝒜)(w : Word 𝒜):
+  h::w ∈ ({[h]}: Language 𝒜) ↔ w = []
+:= by {
   constructor
   . intro H
     rw [mem_letter] at H
@@ -200,21 +206,16 @@ theorem mem_cons (h: 𝒜)(w : Word 𝒜) : h::w ∈ ({[h]}: Language 𝒜) ↔ 
 }
 
 @[simp]
-theorem cons_not_mem (h a: 𝒜)(w : Word 𝒜) : h::w ∈ ({[a]}: Language 𝒜) ↔ h = a ∧ w = [] := by {
+theorem cons_mem_iff (h a: 𝒜)(w : Word 𝒜):
+  h::w ∈ ({[a]}: Language 𝒜) ↔ h = a ∧ w = []
+:= by {
   constructor
   . intro H
     rw [mem_letter] at H
-    injection H with hh ht
-    exact ⟨hh, ht⟩
+    injection H with hh hw
+    exact ⟨hh, hw⟩
   . intro H
-    rw [mem_letter]
-    rw [H.1]
-    rw [H.2]
-}
-
-lemma ncast: ∀ (n : ℕ), NatCast.natCast (n + 1) = NatCast.natCast n + 1 := by {
-  intro n
-  cases n <;> simp [Nat.cast, add_def, zero_def]
+    rw [mem_letter, H.1, H.2]
 }
 
 instance Language.toSemiring : Semiring (Language 𝒜) where
@@ -233,7 +234,7 @@ instance Language.toSemiring : Semiring (Language 𝒜) where
   mul_one L := by rw [mul_def]; apply Set.image2_right_identity List.append_nil
   natCast n := if n = 0 then 0 else 1
   natCast_zero := rfl
-  natCast_succ n := by cases n <;> simp [Nat.cast, add_def, zero_def]; rw [Set.empty_union]
+  natCast_succ n := by cases n <;> simp [Nat.cast, add_def, zero_def]; rw [Set.empty_union]; rw [Set.union_self]
   left_distrib _ _ _ := Set.image2_union_right
   right_distrib _ _ _ := Set.image2_union_left
 
@@ -248,17 +249,27 @@ This operation comes from free from the Monoid instance induced by the Semiring 
 -- instance: HPow (Language 𝒜) ℕ (Language 𝒜) := ⟨powL⟩
 
 @[simp]
-lemma powL_zero (L: Language 𝒜): L ^ 0 = 1 := rfl
+lemma powL_zero (L: Language 𝒜):
+  L ^ 0 = 1
+:= rfl
 
 @[simp]
-lemma powL_n (L: Language 𝒜): L ^ (n+1) = L * (L ^ n) := by apply pow_succ
+lemma powL_n (L: Language 𝒜):
+  L ^ (n+1) = L * (L ^ n)
+:= pow_succ L n
 
 @[simp]
-lemma powL_one (L: Language 𝒜): L ^ 1 = L := by apply pow_one
+lemma powL_one (L: Language 𝒜):
+  L ^ 1 = L
+:= pow_one L
 
-lemma powL_comm (L: Language 𝒜): L^n * L = L * (L^n) := by rw [pow_mul_comm']
+lemma powL_comm (L: Language 𝒜):
+  L^n * L = L * (L^n)
+:= pow_mul_comm' L n
 
-lemma powL_n_right (L: Language 𝒜): L ^ (n+1) = (L ^ n) * L := by rw [powL_n, powL_comm]
+lemma powL_n_right (L: Language 𝒜):
+  L ^ (n+1) = (L ^ n) * L
+:= by rw [powL_n, powL_comm]
 
 /-
 The free monoid L^* is called the "Kleene star of A". Also known as Kleene closure.
@@ -268,19 +279,30 @@ def kleene_closure(L: Language 𝒜): Language 𝒜 :=
 instance Language.kstar: KStar (Language 𝒜) := ⟨kleene_closure⟩
 postfix:1024 "∗" => KStar.kstar
 
-lemma kleene_closure_def(L: Language 𝒜): L∗ = { w | ∃ n: ℕ, w ∈ (L ^ n)} := rfl
+lemma kleene_closure_def(L: Language 𝒜):
+  L∗ = { w | ∃ n: ℕ, w ∈ (L ^ n)}
+:= rfl
 
-lemma one_in_l_star: ∀ L: Language 𝒜, 1 ⊆ L∗ := λ L w hw ↦ by { exists 0 }
-lemma eps_in_star: ∀ L: Language 𝒜, [] ∈ L∗ := λ _ ↦ by { exists 0 }
+lemma one_in_kstar: ∀ L: Language 𝒜,
+  1 ⊆ L∗
+:= λ L w hw ↦ by { exists 0 }
 
-theorem mem_iSup {ι : Sort v} {s : ι → Language 𝒜} {x: Word 𝒜} : (x ∈ ⨆ i, s i) ↔ ∃ i, x ∈ s i :=
-  Set.mem_iUnion
+lemma eps_mem_kstar: ∀ L: Language 𝒜,
+  [] ∈ L∗
+:= λ _ ↦ by { exists 0 }
 
-theorem mem_kstar(L: Language 𝒜): w ∈ L∗ ↔ ∃ n: ℕ, w ∈ (L ^ n) := by {
-  constructor <;> (rintro ⟨n, hw⟩; exact ⟨n, hw⟩)
-}
+theorem mem_iSup {ι : Sort v} {s : ι → Language 𝒜} {x: Word 𝒜}:
+  (x ∈ ⨆ i, s i) ↔ ∃ i, x ∈ s i
+:= Set.mem_iUnion
 
-lemma mem_kstar_empty_in_L (L: Language 𝒜): [] ∈ L → (wx ∈ L∗ ↔ ∃ w₁ w₂, w₁ ∈ L ∧ w₂ ∈ L∗ ∧ w₁ ++ w₂ = wx) := by {
+theorem mem_kstar(L: Language 𝒜):
+  w ∈ L∗ ↔ ∃ n: ℕ, w ∈ (L ^ n)
+:= by constructor <;> (rintro ⟨n, hw⟩; exact ⟨n, hw⟩)
+
+
+lemma mem_kstar_empty_in_L (L: Language 𝒜):
+  [] ∈ L → (wx ∈ L∗ ↔ ∃ w₁ w₂, w₁ ∈ L ∧ w₂ ∈ L∗ ∧ w₁ ++ w₂ = wx)
+:= by {
   intro hE
   constructor
   . rintro ⟨n, hwx⟩
@@ -293,7 +315,7 @@ lemma mem_kstar_empty_in_L (L: Language 𝒜): [] ∈ L → (wx ∈ L∗ ↔ ∃
       . exact hE
       . exists []
         constructor
-        . apply eps_in_star
+        . apply eps_mem_kstar
         . rfl
     }
     | succ n _ => {
@@ -318,13 +340,15 @@ lemma mem_kstar_empty_in_L (L: Language 𝒜): [] ∈ L → (wx ∈ L∗ ↔ ∃
     exists w₂
 }
 
-lemma append_with_empty_star_eq_star (L: Language 𝒜): L * L∗ = L∗ ↔ [] ∈ L := by {
+lemma append_with_empty_star_eq_star (L: Language 𝒜):
+  L * L∗ = L∗ ↔ [] ∈ L
+:= by {
   constructor
   . intro h
     simp [*] at *
     have h₂ : [] ∈ L * L∗ := by {
       rw [h]
-      apply eps_in_star
+      apply eps_mem_kstar
      }
     simp [mul_def, Set.image2] at h₂
     rcases h₂ with ⟨ w₁, hw₁, w₂, hw₂, hwx⟩
@@ -348,37 +372,45 @@ lemma append_with_empty_star_eq_star (L: Language 𝒜): L * L∗ = L∗ ↔ [] 
       . exists wx
 }
 
-theorem kstar_eq_iSup_pow (l : Language α) : l∗ = ⨆ i : ℕ, l ^ i := by
-  ext x
-  simp only [mem_iSup, mem_kstar]
+theorem kstar_eq_iSup_pow (l : Language α):
+  l∗ = ⨆ i : ℕ, l ^ i
+:= by ext x; simp only [mem_iSup, mem_kstar]
 
-theorem iSup_mul {ι : Sort v} (l : ι → Language 𝒜) (m : Language 𝒜) :
-    (⨆ i, l i) * m = ⨆ i, l i * m :=
-  Set.image2_iUnion_left _ _ _
+theorem iSup_mul {ι : Sort v} (l : ι → Language 𝒜) (m : Language 𝒜):
+  (⨆ i, l i) * m = ⨆ i, l i * m
+:= Set.image2_iUnion_left _ _ _
 
-theorem mul_iSup {ι : Sort v} (l : ι → Language 𝒜) (m : Language 𝒜) :
-    (m * ⨆ i, l i) = ⨆ i, m * l i :=
-  Set.image2_iUnion_right _ _ _
+theorem mul_iSup {ι : Sort v} (l : ι → Language 𝒜) (m : Language 𝒜):
+  (m * ⨆ i, l i) = ⨆ i, m * l i
+:= Set.image2_iUnion_right _ _ _
 
-theorem le_mul_congr {l₁ l₂ m₁ m₂ : Language 𝒜} : l₁ ≤ m₁ → l₂ ≤ m₂ → l₁ * l₂ ≤ m₁ * m₂ := by
+theorem le_mul_congr {l₁ l₂ m₁ m₂ : Language 𝒜}:
+l₁ ≤ m₁ → l₂ ≤ m₂ → l₁ * l₂ ≤ m₁ * m₂
+:= by
   intro h₁ h₂ x hx
   simp only [mul_def, exists_and_left, Set.mem_image2, Set.image_prod] at hx ⊢
   tauto
 
-@[simp]
-theorem one_add_self_mul_kstar_eq_kstar (l : Language 𝒜) : 1 + l * l∗ = l∗ := by
-  simp only [kstar_eq_iSup_pow, mul_iSup, ← pow_succ, ← pow_zero l]
-  exact sup_iSup_nat_succ _
-
-theorem mul_self_kstar_comm (l : Language α) : l∗ * l = l * l∗ := by
+theorem mul_self_kstar_comm (l : Language α):
+  l∗ * l = l * l∗
+:= by
   simp only [kstar_eq_iSup_pow, mul_iSup, iSup_mul, ← pow_succ, ← pow_succ']
 
 @[simp]
-theorem one_add_kstar_mul_self_eq_kstar (l : Language α) : 1 + l∗ * l = l∗ := by
+theorem one_add_self_mul_kstar_eq_kstar (l : Language 𝒜):
+  1 + l * l∗ = l∗
+:= by
+  simp only [kstar_eq_iSup_pow, mul_iSup, ← pow_succ, ← pow_zero l]
+  exact sup_iSup_nat_succ _
+
+@[simp]
+theorem one_add_kstar_mul_self_eq_kstar (l : Language α):
+  1 + l∗ * l = l∗
+:= by
   rw [mul_self_kstar_comm, one_add_self_mul_kstar_eq_kstar]
 
-instance Language.toKleeneAlgebra: KleeneAlgebra (Language 𝒜) :=
-  { Language.toSemiring, Language.toCompleteAtomicBooleanAlgebra with
+instance Language.toKleeneAlgebra: KleeneAlgebra (Language 𝒜)
+:= { Language.toSemiring, Language.toCompleteAtomicBooleanAlgebra with
     one_le_kstar := λ L w hw ↦ (by exists 0),
     mul_kstar_le_kstar := fun L ↦ (one_add_self_mul_kstar_eq_kstar L).le.trans' le_sup_right,
     kstar_mul_le_kstar := fun L ↦ (one_add_kstar_mul_self_eq_kstar L).le.trans' le_sup_right,
@@ -397,20 +429,9 @@ instance Language.toKleeneAlgebra: KleeneAlgebra (Language 𝒜) :=
       rw [pow_succ, ← mul_assoc m l (l^n)]
       exact le_trans (le_mul_congr h le_rfl) ih }
 
-lemma zero_in_l_star: ∀ L: Language 𝒜, { [] } ⊆ L∗ := by {
-  intro L
-  simp [kleene_closure_def]
-  intro w
-  intro w_in_empty
-  exists 0
-}
-
-theorem nil_mem_star (l : Language α) : [] ∈ l∗ := by {
-  simp [kleene_closure_def]
-  exists 0
-}
-
-lemma l_mem_l_star (L: Language 𝒜): ∀ w: Word 𝒜, w ∈ L → w ∈ L∗ := by {
+lemma l_mem_l_star (L: Language 𝒜):
+  ∀ w: Word 𝒜, w ∈ L → w ∈ L∗
+:= by {
   intro w
   intro w_in_L
   exists 1
@@ -418,32 +439,48 @@ lemma l_mem_l_star (L: Language 𝒜): ∀ w: Word 𝒜, w ∈ L → w ∈ L∗ 
   exact w_in_L
 }
 
-lemma star_to_star_star (L: Language 𝒜): w ∈ L∗ → w ∈ L∗∗ := by simp [kstar_mul_kstar]
+lemma star_to_star_star (L: Language 𝒜):
+  w ∈ L∗ → w ∈ L∗∗
+:= by simp [kstar_mul_kstar]
 
-lemma star_in_star_star (L: Language 𝒜): L∗ ⊆ L∗∗ := by {
+lemma star_in_star_star (L: Language 𝒜):
+  L∗ ⊆ L∗∗ :=
+by {
   simp [kstar_mul_kstar]
   rintro ⟨⟩ <;> simp
 }
 
-lemma star_star_to_star (L: Language 𝒜): w ∈ L∗∗ → w ∈ L∗ := by simp [kstar_mul_kstar]
+lemma star_star_to_star (L: Language 𝒜):
+  w ∈ L∗∗ → w ∈ L∗
+:= by simp [kstar_mul_kstar]
 
-lemma star_star_in_star(L: Language 𝒜): L∗∗ ⊆ L∗ := by {
+lemma star_star_in_star(L: Language 𝒜):
+  L∗∗ ⊆ L∗
+:= by {
   simp [kstar_mul_kstar]
   rintro ⟨⟩ <;> simp
 }
 
 @[simp]
-theorem kleene_closure_idempotent: ∀ L: Language 𝒜, L∗∗ = L∗ := λ _ ↦ by apply kstar_idem
+theorem kleene_closure_idempotent:
+  ∀ L: Language 𝒜, L∗∗ = L∗
+:= λ _ ↦ by apply kstar_idem
 
 @[simp]
-lemma concat_kleene_closure_idem (L: Language 𝒜): L∗ * L∗ = L∗  := by apply kstar_mul_kstar
+lemma concat_kleene_closure_idem (L: Language 𝒜):
+  L∗ * L∗ = L∗
+:= by apply kstar_mul_kstar
 
 def positive_closure(L: Language 𝒜): Language 𝒜 := L ++ (L∗)
 postfix:65   "⊕"    => positive_closure
 
-lemma mul_eq_append (L₁ L₂: Language 𝒜):  L₁ * L₂ = L₁ ++ L₂ := rfl
+lemma mul_eq_append (L₁ L₂: Language 𝒜):
+  L₁ * L₂ = L₁ ++ L₂
+:= rfl
 
-def star_eq_eps_union_plus (L: Language 𝒜): L∗ = 1 + (L⊕) := by {
+def star_eq_eps_union_plus (L: Language 𝒜):
+  L∗ = 1 + (L⊕)
+:= by {
   rw [positive_closure, ←mul_eq_append, eq_comm]
   apply one_add_self_mul_kstar_eq_kstar
 }
@@ -451,7 +488,9 @@ def star_eq_eps_union_plus (L: Language 𝒜): L∗ = 1 + (L⊕) := by {
 def LSigma (𝒜: Type*): Language 𝒜 := { [a] | a : 𝒜 }
 -- notation "Σ" => sigma
 
-lemma sigma_def (𝒜: Type*): LSigma 𝒜 = { [a] | a : 𝒜 } := rfl
+lemma sigma_def (𝒜: Type*):
+  LSigma 𝒜 = { [a] | a : 𝒜 }
+:= rfl
 
 @[simp]
 lemma empty_concatenation: ∀ L: Language 𝒜, ∅ ++ L = ∅ := by apply zero_mul
