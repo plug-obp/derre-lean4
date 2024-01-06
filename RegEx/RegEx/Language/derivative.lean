@@ -12,7 +12,7 @@ To write the correctness of the regex derivatiev, `DerL` defines derivative for 
 The derivative of a language L wrt a character c is the set of all words w for which c⋅w is in L
 Sometimes this operation is called a residual.
 -/
-def derL (c: 𝒜) (L: Language 𝒜) : Language 𝒜 := { w | (c :: w) ∈ L }
+def derL (c: 𝒜) (L: Language 𝒜): Language 𝒜 := { w | (c :: w) ∈ L }
 instance : Derivative 𝒜 (Language 𝒜) := ⟨derL⟩
 instance : Derivative 𝒜 (Set (Word 𝒜)) := ⟨derL⟩
 
@@ -22,7 +22,7 @@ lemma DerL_def (c: 𝒜) (L: Language 𝒜) :
 
 lemma DerL_empty (c: 𝒜) :
   𝒟 c (∅: Language 𝒜) = ∅
-:= by rfl
+:= rfl
 
 lemma DerL_epsilon (c: 𝒜) :
   𝒟 c 1 = (∅: Language 𝒜)
@@ -79,10 +79,14 @@ Maps a language to 1 or 0 depending on whether the language contains the empty w
 -/
 def ν (L: Language 𝒜): Language 𝒜 := { x | x ∈ L ∧ x = [] }
 
-lemma ν_def (L: Language 𝒜): ν L = { x | x ∈ L ∧ x = [] } := rfl
+lemma ν_def (L: Language 𝒜):
+  ν L = { x | x ∈ L ∧ x = [] }
+:= rfl
 
-lemma ν_empty: ν (∅: Language 𝒜) = ∅ := by {
-  simp [ν_def]
+lemma ν_empty:
+  ν (∅: Language 𝒜) = ∅
+:= by {
+  simp [ν]
   ext w
   constructor
   . intro H
@@ -93,10 +97,14 @@ lemma ν_empty: ν (∅: Language 𝒜) = ∅ := by {
     contradiction
 }
 
-lemma ν_epsilon: ν 1 = (1: Language 𝒜) := by simp [ν_def]; rfl
+lemma ν_epsilon:
+  ν 1 = (1: Language 𝒜)
+:= by simp [ν]; rfl
 
-lemma ν_concat (L₁ L₂: Language 𝒜): ν (L₁ * L₂) = (ν L₁ * ν L₂) := by {
-  simp [ν_def]
+lemma ν_concat (L₁ L₂: Language 𝒜):
+  ν (L₁ * L₂) = (ν L₁ * ν L₂)
+:= by {
+  simp [ν]
   ext w
   constructor
   . intro H
@@ -126,7 +134,9 @@ lemma ν_concat (L₁ L₂: Language 𝒜): ν (L₁ * L₂) = (ν L₁ * ν L�
       exact (Eq.symm hconc)
 }
 
-lemma ν_union (L₁ L₂: Language 𝒜): ν (L₁ + L₂) = (ν L₁ + ν L₂) := by {
+lemma ν_union(L₁ L₂: Language 𝒜):
+  ν (L₁ + L₂) = (ν L₁ + ν L₂)
+:= by {
   ext w
   constructor
   . rintro ⟨ ⟨ l ⟩ | ⟨ r ⟩  , we ⟩
@@ -151,7 +161,9 @@ lemma ν_union (L₁ L₂: Language 𝒜): ν (L₁ + L₂) = (ν L₁ + ν L₂
       .rfl
 }
 
-lemma ν_star (L: Language 𝒜): ν (L∗) = (1: Language 𝒜) := by {
+lemma ν_star (L: Language 𝒜):
+  ν (L∗) = (1: Language 𝒜)
+:= by {
   simp [ν_def]
   ext w
   constructor
@@ -167,12 +179,9 @@ lemma ν_star (L: Language 𝒜): ν (L∗) = (1: Language 𝒜) := by {
     . exact H
 }
 
-lemma eps_in_ν_imp_eps(L: Language 𝒜): [] ∈ ν L → [] ∈ L := by {
-  rintro ⟨ h₁, _ ⟩
-  exact h₁
-}
-
-lemma ν_empty_in (L: Language 𝒜): [] ∈ ν L ↔ [] ∈ L := by {
+lemma ν_empty_in (L: Language 𝒜):
+  [] ∈ ν L ↔ [] ∈ L
+:= by {
   constructor
   . rintro ⟨ h₁, _ ⟩
     exact h₁
@@ -181,7 +190,9 @@ lemma ν_empty_in (L: Language 𝒜): [] ∈ ν L ↔ [] ∈ L := by {
     exact ⟨ H, rfl ⟩
 }
 
-lemma der_concat_to_union(c: 𝒜) (L₁ L₂: Language 𝒜): w ∈ 𝒟 c (L₁ * L₂) → w ∈ 𝒟 c L₁ * L₂ + 𝒟 c L₂ := by {
+lemma der_concat_to_union'(c: 𝒜)(L₁ L₂: Language 𝒜):
+  w ∈ 𝒟 c (L₁ * L₂) → w ∈ 𝒟 c L₁ * L₂ + 𝒟 c L₂
+:= by {
   rintro ⟨ w₁, ⟨ w₂, ⟨ hw₁, hw₂, hw ⟩  ⟩  ⟩
   dsimp [] at *
   induction w₁ with
@@ -201,7 +212,9 @@ lemma der_concat_to_union(c: 𝒜) (L₁ L₂: Language 𝒜): w ∈ 𝒟 c (L�
     exact hw₁
 }
 
-lemma der_concat_to_union'(c: 𝒜) (L₁ L₂: Language 𝒜): w ∈ 𝒟 c (L₁ * L₂) → w ∈ 𝒟 c L₁ * L₂ + ν L₁ * (𝒟 c L₂) := by {
+lemma der_concat_to_union(c: 𝒜) (L₁ L₂: Language 𝒜):
+  w ∈ 𝒟 c (L₁ * L₂) → w ∈ 𝒟 c L₁ * L₂ + ν L₁ * (𝒟 c L₂)
+:= by {
   rintro ⟨ w₁, ⟨ w₂, ⟨ hw₁, hw₂, hw ⟩ ⟩ ⟩
   dsimp [] at *
   induction w₁ with
@@ -223,7 +236,9 @@ lemma der_concat_to_union'(c: 𝒜) (L₁ L₂: Language 𝒜): w ∈ 𝒟 c (L�
     exact hw₁
 }
 
-lemma der_union_to_concat(c: 𝒜) (L₁ L₂: Language 𝒜): wx ∈ 𝒟 c L₁ * L₂ + ν L₁ * 𝒟 c L₂ → wx ∈ 𝒟 c (L₁ * L₂) := by {
+lemma der_union_to_concat(c: 𝒜) (L₁ L₂: Language 𝒜):
+  wx ∈ 𝒟 c L₁ * L₂ + ν L₁ * 𝒟 c L₂ → wx ∈ 𝒟 c (L₁ * L₂)
+:= by {
   rintro ( ⟨ w₁ , ⟨ w₂, ⟨hw₁, hw₂, hwx⟩ ⟩ ⟩ | ⟨ w₁, ⟨ w₂, ⟨ ⟨ w₁inL₁, w₁ε ⟩ , ⟨ hw₂ , hwx ⟩ ⟩ ⟩ ⟩ )
   . simp [*] at *
     dsimp [DerL_def, mul_def, Set.image2]
@@ -248,16 +263,20 @@ lemma der_union_to_concat(c: 𝒜) (L₁ L₂: Language 𝒜): wx ∈ 𝒟 c L�
         exact hwx
 }
 
-lemma DerL_concat (c: 𝒜) (L₁ L₂: Language 𝒜) : 𝒟 c (L₁ * L₂) = (𝒟 c L₁) * L₂ + (ν L₁ * 𝒟 c L₂) := by {
+lemma DerL_concat (c: 𝒜) (L₁ L₂: Language 𝒜):
+  𝒟 c (L₁ * L₂) = (𝒟 c L₁) * L₂ + (ν L₁ * 𝒟 c L₂)
+:= by {
   ext wx
   constructor
-  . apply der_concat_to_union'
+  . apply der_concat_to_union
   . apply der_union_to_concat
 }
 
-lemma DerL_concat_self (c: 𝒜) (L: Language 𝒜): 𝒟 c (L * L) = (𝒟 c L) * L := calc
+lemma DerL_concat_self (c: 𝒜) (L: Language 𝒜):
+  𝒟 c (L * L) = (𝒟 c L) * L
+:= calc
   𝒟 c (L * L) = 𝒟 c L * L + (ν L * 𝒟 c L) := by rw [DerL_concat]
-          _ = 𝒟 c L * L                   := by {
+          _ = 𝒟 c L * L                    := by {
             rw [add_eq_self_iff]
             rintro (wx ⟨ w₁, ⟨ w₂, ⟨ ⟨ hw₁, w₁e ⟩ , ⟨ hw₂, hwx ⟩ ⟩ ⟩ ⟩ )
             simp [*] at *
@@ -272,7 +291,9 @@ lemma DerL_concat_self (c: 𝒜) (L: Language 𝒜): 𝒟 c (L * L) = (𝒟 c L)
                 apply word_append_nil
           }
 
-lemma DerL_union (c: 𝒜) (L₁ L₂: Language 𝒜) : 𝒟 c (L₁ + L₂) = 𝒟 c L₁ + 𝒟 c L₂ := by {
+lemma DerL_union (c: 𝒜) (L₁ L₂: Language 𝒜):
+  𝒟 c (L₁ + L₂) = 𝒟 c L₁ + 𝒟 c L₂
+:= by {
   ext w₁
   simp [DerL_def]
   constructor
@@ -289,14 +310,20 @@ lemma DerL_union (c: 𝒜) (L₁ L₂: Language 𝒜) : 𝒟 c (L₁ + L₂) = �
       next H₂ => exact H₂
 }
 
-lemma DerL_union_self(c: 𝒜) (L: Language 𝒜) : 𝒟 c (L + L) = 𝒟 c L := by rw [add_involution]
+lemma DerL_union_self(c: 𝒜) (L: Language 𝒜):
+  𝒟 c (L + L) = 𝒟 c L
+:= by rw [add_involution]
 
-lemma DerL_pow₀ (c: 𝒜) (L: Language 𝒜): 𝒟 c (L ^ (n+1)) = 𝒟 c L * (L ^ n) + ν L * 𝒟 c (L ^ n) := by {
+lemma DerL_pow₀ (c: 𝒜) (L: Language 𝒜):
+  𝒟 c (L ^ (n+1)) = 𝒟 c L * (L ^ n) + ν L * 𝒟 c (L ^ n)
+:= by {
   rw [←DerL_concat c L (L ^ n)]
   rw [←powL_n]
 }
 
-lemma DerL_pow (c: 𝒜) (L: Language 𝒜)(n: ℕ): 𝒟 c (L ^ (n+1)) = 𝒟 c L * (L ^ n) := by {
+lemma DerL_pow (c: 𝒜) (L: Language 𝒜)(n: ℕ):
+  𝒟 c (L ^ (n+1)) = 𝒟 c L * (L ^ n)
+:= by {
   induction n with
   | zero =>
     rw [powL_zero]
@@ -319,13 +346,17 @@ lemma DerL_pow (c: 𝒜) (L: Language 𝒜)(n: ℕ): 𝒟 c (L ^ (n+1)) = 𝒟 c
     exact conc
 }
 
-lemma star_is_iunion (L: Language 𝒜): L∗ = ⋃ n, L ^ n := by {
+lemma star_is_iunion (L: Language 𝒜):
+  L∗ = ⋃ n, L ^ n
+:= by {
   ext wx
   rw [kleene_closure_def, Set.mem_iUnion]
   rfl
 }
 
-lemma powL_n' (L: Language 𝒜) (hn: n≥1): L ^ (n) = L * (L ^ (n-1)) := by {
+lemma powL_n' (L: Language 𝒜) (hn: n≥1):
+  L ^ (n) = L * (L ^ (n-1))
+:= by {
   induction n with
   | zero =>
     exfalso
@@ -334,33 +365,9 @@ lemma powL_n' (L: Language 𝒜) (hn: n≥1): L ^ (n) = L * (L ^ (n-1)) := by {
     simp [*] at *
 }
 
-
-lemma factor_out(L: Language 𝒜) : ⋃ n, L ^ n = L ^ 0 ∪ ⋃ (i : ℕ), L ^ (i + 1) := by rw [←Set.union_iUnion_nat_succ]
-
-lemma union_factor_out (L: Language 𝒜): ⋃ n ≥ 1, L^0 ∪ L ^ n = L^0 ∪ ⋃ n ≥ 1,  L^n := by {
-  ext wx
-  simp only [Set.mem_union, Set.mem_iUnion]
-  constructor
-  . rintro ⟨ n, ⟨ hn, ⟨ h₀, h₁ ⟩ ⟩ ⟩
-    . apply Or.inl
-      rfl
-    . apply Or.inr
-      exists n
-      exists hn
-  . rintro (H₁ | ⟨ m, ⟨hm, hwx ⟩ ⟩ )
-    . exists 1
-      exists Nat.zero_lt_one
-      apply Or.inl
-      exact H₁
-    . exists m
-      exists hm
-      apply Or.inr
-      exact hwx
-}
-
-lemma union_eq_plus (L₁ L₂: Language 𝒜): L₁ ∪ L₂ = L₁ + L₂ := rfl
-
-lemma mem_DerL_iUnion (c: 𝒜) (L: Language 𝒜): wx ∈ 𝒟 c (⋃ (n : ℕ), L ^ (n + 1)) ↔ ∃ k, wx ∈ 𝒟 c (L ^ (k + 1)) := by {
+lemma mem_DerL_iUnion (c: 𝒜) (L: Language 𝒜):
+  wx ∈ 𝒟 c (⋃ (n : ℕ), L ^ (n + 1)) ↔ ∃ k, wx ∈ 𝒟 c (L ^ (k + 1))
+:= by {
   simp [Set.mem_iUnion]
   constructor
   . rintro ⟨ L₁, ⟨ ⟨ n, m ⟩ , hwx ⟩ ⟩
@@ -376,8 +383,10 @@ lemma mem_DerL_iUnion (c: 𝒜) (L: Language 𝒜): wx ∈ 𝒟 c (⋃ (n : ℕ)
     . exact hwx
 }
 
---***** This is DerL_plus because the union is over ℕ⁺
-lemma DerL_iUnion(c: 𝒜) (L: Language 𝒜): 𝒟 c (⋃ n, L ^ (n + 1)) = ⋃ n, 𝒟 c (L ^ (n + 1)) := by {
+--This is DerL_plus because the union is over ℕ⁺
+lemma DerL_iUnion(c: 𝒜) (L: Language 𝒜):
+  𝒟 c (⋃ n, L ^ (n + 1)) = ⋃ n, 𝒟 c (L ^ (n + 1))
+:= by {
   ext wx
   constructor
   . rintro ⟨L₁, ⟨⟨n, m⟩  , hh ⟩ ⟩
@@ -395,31 +404,14 @@ instance: One (Set (Word 𝒜)) := ⟨{[]}⟩
 instance: Mul (Set (Word 𝒜)) := ⟨ concatenationL ⟩
 instance: Mul (Word 𝒜) := ⟨ (. ++ .) ⟩
 
---***** This is an instance of left distributivity (rw [left_distrib])
-lemma derL_factor_out'(c: 𝒜) (L: Language 𝒜) :
-(𝒟 c L) * ⋃ n, (L ^ n) = ⋃ n, (𝒟 c L) * (L ^ n)
+--This is an instance of left distributivity (rw [left_distrib])
+lemma derL_left_distrib(c: 𝒜) (L: Language 𝒜):
+  (𝒟 c L) * ⋃ n, (L ^ n) = ⋃ n, (𝒟 c L) * (L ^ n)
 := (Set.mul_iUnion (𝒟 c L) (λ n => npowRec n L))
 
-
-lemma lsub_add_cancel (c: 𝒜) (L: Language 𝒜): ⋃ n ≥ 1, 𝒟 c (L ^ n) = ⋃ n ≥ 1, 𝒟 c (L ^ (n - 1 + 1)) := by {
-  ext wx
-  simp [Set.mem_iUnion] at *
-  constructor
-  . rintro ⟨ n, ⟨ hn, hwx ⟩ ⟩
-    exists n
-    exists hn
-    rw [Nat.sub_add_cancel]
-    exact hwx
-    exact hn
-  . rintro ⟨ n, ⟨ hn, hwx ⟩ ⟩
-    exists n
-    exists hn
-    rw [Nat.sub_add_cancel] at hwx
-    exact hwx
-    exact hn
-}
-
-lemma pow_iUnion (c: 𝒜) (L: Language 𝒜) : ⋃ n, 𝒟 c (L ^ (n+1)) = ⋃ n, 𝒟 c L * (L ^ n) := by {
+lemma pow_iUnion (c: 𝒜) (L: Language 𝒜):
+  ⋃ n, 𝒟 c (L ^ (n+1)) = ⋃ n, 𝒟 c L * (L ^ n)
+:= by {
   ext wx
   simp [Set.mem_iUnion] at *
   constructor
@@ -442,15 +434,17 @@ lemma pow_iUnion (c: 𝒜) (L: Language 𝒜) : ⋃ n, 𝒟 c (L ^ (n+1)) = ⋃ 
 --        = D c L * L⁰ + D c L * L¹ + D c L * L² + D c L * L³ + ...
 --        = D c L * (L⁰ + L¹ + L² + L³ + ...)
 --        = D c L * L∗
-lemma DerL_star (c: 𝒜) (L: Language 𝒜): 𝒟 c (L∗) = (𝒟 c L) * (L∗) :=
+lemma DerL_star (c: 𝒜) (L: Language 𝒜):
+  𝒟 c (L∗) = (𝒟 c L) * (L∗)
+:=
   calc
     (𝒟 c L∗) = 𝒟 c (⋃ n, L ^ n)                      := by rw [star_is_iunion] -- this is equivalent to a big union       L∗ = ⋃ n, L^n
-    _ = 𝒟 c (L^0 + (⋃ n, L ^ (n + 1)))               := by rw [←Set.union_iUnion_nat_succ, union_eq_plus] -- factor out  ⋃ n>0, L^0 ∪ L^(n-1) = L^0 + ⋃ n>0, L^(n-1)
+    _ = 𝒟 c (L^0 + (⋃ n, L ^ (n + 1)))               := by rw [←Set.union_iUnion_nat_succ, add_def] -- factor out  ⋃ n>0, L^0 ∪ L^(n-1) = L^0 + ⋃ n>0, L^(n-1)
     _ = 𝒟 c (L^0) + 𝒟 c (⋃ n, L ^ (n + 1))           := by rw [DerL_union] -- apply derivative to the union
     _ = 𝒟 c (1:Language 𝒜) + 𝒟 c (⋃ n, L ^ (n + 1)) := by rw [pow_zero] -- L^0 = 1
     _ = ∅ + 𝒟 c (⋃ n, L ^ (n + 1))                   := by rw [DerL_epsilon]   -- 𝒟 c 1 = ∅
     _ = 𝒟 c (⋃ n, L ^ (n + 1))                       := by rw [←zero_def, zero_add]       -- ∅ + L = L
     _ = ⋃ n, 𝒟 c (L ^ (n+1))                          := by rw [DerL_iUnion] -- push 𝒟 inside the union DerL_iUnion
     _ = ⋃ n, 𝒟 c L * (L ^ n)                          := by rw [pow_iUnion] -- 𝒟 c (L^n+1) = 𝒟 c L * L^n DerL_pow
-    _ = 𝒟 c L * ⋃ n, (L ^ n)                         := by rw [derL_factor_out'] -- factor out (D c L)
+    _ = 𝒟 c L * ⋃ n, (L ^ n)                         := by rw [derL_left_distrib] -- factor out (D c L)
     _ = 𝒟 c L * (L∗)                                  := by rw [←star_is_iunion] -- rw [←kleene_closure_def] -- we get back a kleene closure

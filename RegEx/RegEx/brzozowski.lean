@@ -18,25 +18,11 @@ def δ: Regex 𝒜 → Regex 𝒜
 | e₁ ⋃ e₂ => δ e₁ ⋃ δ e₂
 | _★      => ε
 
-lemma δ_empty: δ (Φ: Regex 𝒜) = Φ := by {
-  simp [δ]
-}
-
-lemma δ_token: ∀ c: 𝒜, δ (τ c) = Φ := by {
-  simp [δ]
-}
-
-lemma δ_union: ∀ e₁ e₂: Regex 𝒜, δ (e₁ ⋃ e₂) = δ e₁ ⋃ δ e₂ := by {
-  simp [δ]
-}
-
-lemma δ_concatenation: ∀ e₁ e₂: Regex 𝒜, δ (e₁ ⋅ e₂) = δ e₁ ⋅ δ e₂ := by {
-  simp [δ]
-}
-
-lemma δ_star: ∀ e: Regex 𝒜, δ (e★) = ε := by {
-  simp [δ]
-}
+lemma δ_empty: δ (Φ: Regex 𝒜) = Φ := by simp [δ]
+lemma δ_token: ∀ c: 𝒜, δ (τ c) = Φ := by simp [δ]
+lemma δ_union: ∀ e₁ e₂: Regex 𝒜, δ (e₁ ⋃ e₂) = δ e₁ ⋃ δ e₂ := by simp [δ]
+lemma δ_concatenation: ∀ e₁ e₂: Regex 𝒜, δ (e₁ ⋅ e₂) = δ e₁ ⋅ δ e₂ := by simp [δ]
+lemma δ_star: ∀ e: Regex 𝒜, δ (e★) = ε := by simp [δ]
 
 /-
   For any Regex re, the language of (δ re) contains only the empty Word [].
@@ -284,7 +270,9 @@ lemma δ_eq_ν(e: Regex 𝒜):  ℒ (δ e) = ν (ℒ e) := by {
   Then for each case we unfold the derivative and retrieve the denotation from ℒ.
   Now in the language world we simply use the lemmas defined for languages.
 -/
-theorem LD_eq_DL (c: 𝒜) (r: Regex 𝒜): ℒ (𝒟 c r) = 𝒟 c (ℒ r) := by {
+theorem LD_eq_DL (c: 𝒜) (r: Regex 𝒜):
+  ℒ (𝒟 c r) = 𝒟 c (ℒ r)
+:= by {
   induction r with
   | empty =>
     simp [ℒ, D]
