@@ -95,6 +95,23 @@ lemma nil_append_nil (w₁ w₂: Word 𝒜): w₁ ++ w₂ = [] ↔ w₁ = [] ∧
     rfl
 }
 
+lemma append_nil_iff_both_nil(s₁ s₂: Word 𝒜):
+  s₁ ++ s₂ = [] ↔ s₁ = [] ∧ s₂ = []
+:= by {
+  constructor
+  . intro H
+    cases s₁ with
+    | nil =>
+      rw [nil_append_word] at H
+      simp [H]
+    | cons h t =>
+      exfalso
+      contradiction
+  . intro H
+    rw [H.left, H.right]
+    rfl
+}
+
 lemma word_append_assoc: ∀ w₁ w₂ w₃: Word 𝒜, w₁ ++ w₂ ++ w₃ = w₁ ++ (w₂ ++ w₃) := by {
   intros w₁ w₂ w₃
   apply List.append_assoc
@@ -471,7 +488,7 @@ lemma concat_kleene_closure_idem (L: Language 𝒜):
   L∗ * L∗ = L∗
 := by apply kstar_mul_kstar
 
-def positive_closure(L: Language 𝒜): Language 𝒜 := L ++ (L∗)
+def positive_closure(L: Language 𝒜): Language 𝒜 := L * (L∗)
 postfix:65   "⊕"    => positive_closure
 
 lemma mul_eq_append (L₁ L₂: Language 𝒜):
@@ -481,7 +498,7 @@ lemma mul_eq_append (L₁ L₂: Language 𝒜):
 def star_eq_eps_union_plus (L: Language 𝒜):
   L∗ = 1 + (L⊕)
 := by {
-  rw [positive_closure, ←mul_eq_append, eq_comm]
+  rw [positive_closure, eq_comm]
   apply one_add_self_mul_kstar_eq_kstar
 }
 
@@ -493,42 +510,38 @@ lemma sigma_def (𝒜: Type*):
 := rfl
 
 @[simp]
-lemma empty_concatenation: ∀ L: Language 𝒜, ∅ ++ L = ∅ := by apply zero_mul
+lemma empty_concatenation(L: Language 𝒜):
+  ∅ * L = ∅
+:= by apply zero_mul
 
 @[simp]
-lemma concatenation_empty: ∀ L: Language 𝒜, L ++ ∅ = ∅ := by apply mul_zero
+lemma concatenation_empty(L: Language 𝒜):
+  L * ∅ = ∅
+:= by apply mul_zero
 
 @[simp]
-lemma empty_pow: n > 0 → (∅: Language 𝒜) ^ n = ∅ := by apply zero_pow
+lemma empty_pow:
+  n > 0 → (∅: Language 𝒜) ^ n = ∅
+:= by apply zero_pow
 
 @[simp]
-lemma empty_star_is_ε: (∅: Language 𝒜)∗ = 1 := by {
-  apply kstar_zero
-}
+lemma empty_star_is_one:
+  (∅: Language 𝒜)∗ = 1
+:= kstar_zero
 
 @[simp]
-lemma ε_concatenation: ∀ L: Language 𝒜, 1 * L = L := by apply one_mul
+lemma one_concatenation(L: Language 𝒜):
+  1 * L = L
+:= by apply one_mul
 
 @[simp]
-lemma concatenation_ε: ∀ L: Language 𝒜, L ++ 1 = L := by apply mul_one
+lemma concatenation_one(L: Language 𝒜):
+  L * 1 = L
+:= by apply mul_one
 
-lemma L_one_mul: ∀ L: Language 𝒜, 1 * L = 1 ↔ L = 1 := by simp [one_mul]
-
-lemma append_nil_iff_both_nil: ∀ s₁ s₂: Word 𝒜, s₁ ++ s₂ = [] ↔ s₁ = [] ∧ s₂ = [] := by {
-  intros s₁ s₂
-  constructor
-  . intro H
-    cases s₁ with
-    | nil =>
-      rw [nil_append_word] at H
-      simp [H]
-    | cons h t =>
-      exfalso
-      contradiction
-  . intro H
-    rw [H.left, H.right]
-    rfl
-}
+lemma L_one_mul(L: Language 𝒜):
+  1 * L = 1 ↔ L = 1
+:= by simp [one_mul]
 
 @[simp]
 lemma one_mul_one: ∀ L₁ L₂: Language 𝒜, (L₁ * L₂ = 1) → (L₁ = 1 ↔ L₂ = 1) := by {
@@ -537,21 +550,28 @@ lemma one_mul_one: ∀ L₁ L₂: Language 𝒜, (L₁ * L₂ = 1) → (L₁ = 1
   exact H
 }
 
-lemma ε_pow: ∀ n: ℕ, (1: Language 𝒜) ^ n = 1 := by apply one_pow
+lemma eps_pow_n:
+  (1: Language 𝒜) ^ n = 1
+:= by apply one_pow
 
 @[simp]
-lemma ε_star: (1: Language 𝒜)∗ = 1 := by apply kstar_one
+lemma eps_eq_star:
+  (1: Language 𝒜)∗ = 1
+:= by apply kstar_one
 
 @[simp]
-lemma ε_positive_closure: (1: Language 𝒜) ⊕ = 1 := by simp [positive_closure, ε_star]
+lemma ε_positive_closure:
+  (1: Language 𝒜) ⊕ = 1
+:= by simp [positive_closure]
 
 @[simp]
-lemma ε_pow_positive_closure: ∀ n: ℕ, (1: Language 𝒜) ^ n ⊕ = 1 := by {
-  intro n
-  simp [positive_closure, ε_pow, ε_concatenation, ε_star]
-}
+lemma ε_pow_positive_closure:
+  (1: Language 𝒜) ^ n ⊕ = 1
+:= by simp [positive_closure]
 
-lemma tail_empty_singleton: {w: Word 𝒜 | (c :: w) ∈ ( {[c]}: Language 𝒜)} = (1: Language 𝒜) := by {
+lemma tail_empty_singleton:
+  {w: Word 𝒜 | (c :: w) ∈ ( {[c]}: Language 𝒜)} = (1: Language 𝒜)
+:= by {
   ext wx
   constructor
   . rintro ⟨_⟩
@@ -560,7 +580,9 @@ lemma tail_empty_singleton: {w: Word 𝒜 | (c :: w) ∈ ( {[c]}: Language 𝒜)
     tauto
 }
 
-lemma empty_singleton (hne: c ≠ d): {w: Word 𝒜 | (c :: w) ∈ ( {[d]}: Language 𝒜)} = ∅ := by {
+lemma empty_singleton (hne: c ≠ d):
+  {w: Word 𝒜 | (c :: w) ∈ ( {[d]}: Language 𝒜)} = ∅
+:= by {
   ext w
   constructor
   . intro H
@@ -571,15 +593,17 @@ lemma empty_singleton (hne: c ≠ d): {w: Word 𝒜 | (c :: w) ∈ ( {[d]}: Lang
     contradiction
 }
 
-lemma eps_in_empty: [] ∉ (∅: Language 𝒜) := id
+lemma eps_not_in_empty:
+  [] ∉ (∅: Language 𝒜)
+:= id
 
-lemma add_involution: ∀ L: Language 𝒜, L + L = L := by {
-  intro L
-  apply Set.union_self
-}
+lemma add_involution(L: Language 𝒜):
+  L + L = L
+:= Set.union_self L
 
-lemma add_eq_self_iff: ∀ L₁ L₂: Language 𝒜, L₁ + L₂ = L₁ ↔ L₂ ⊆ L₁ := by {
-  intros L₁ L₂
+lemma add_eq_self_iff(L₁ L₂: Language 𝒜):
+  L₁ + L₂ = L₁ ↔ L₂ ⊆ L₁
+:= by {
   constructor
   . intro H
     rw [←H]

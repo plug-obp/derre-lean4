@@ -92,15 +92,11 @@ lemma re_concatenation_ε: ∀ e: Regex 𝒜, ℒ (e ⋅ ε) = ℒ e := by {
 @[simp]
 lemma Φ_concatenation: ∀ e: Regex 𝒜, ℒ (Φ ⋅ e) = ∅ := by {
   simp [ℒ]
-  intro e
-  apply zero_mul
 }
 
 @[simp]
 lemma concatenation_Φ: ∀ e: Regex 𝒜, ℒ (e ⋅ Φ) = ∅ := by {
   simp [ℒ]
-  intro e
-  apply mul_zero
 }
 
 lemma concatenation_assoc: ∀ e₁ e₂ e₃: Regex 𝒜, ℒ ((e₁ ⋅ e₂) ⋅ e₃) = ℒ (e₁ ⋅ (e₂ ⋅ e₃)) := by {
