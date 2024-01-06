@@ -259,11 +259,14 @@ instance Language.toSemiring : Semiring (Language 𝒜) where
 If L is a formal language, then Lⁱ, the iᵗʰ power of L, is the concatenation of L with itself i times.
 That is, Lⁱ can be understood to be the set of all strings that can be represented as the concatenation of i strings in L.
 This operation comes from free from the Monoid instance induced by the Semiring instance.
+#check npowRec
 -/
--- def powL (L: Language 𝒜): ℕ → Language 𝒜
--- | 0 => { [] }
--- | (n+1) => L * (powL L n)
--- instance: HPow (Language 𝒜) ℕ (Language 𝒜) := ⟨powL⟩
+
+instance semigroup : Semigroup (Language 𝒜) := by infer_instance
+instance monoid : Monoid (Language 𝒜) := by infer_instance              -- this instance provides the power
+instance add_semigroup : AddSemigroup (Language 𝒜) := by infer_instance
+instance add_monoid : AddMonoid (Language 𝒜) := by infer_instance
+instance add_comm_monoid : AddCommMonoid (Language 𝒜) := by infer_instance
 
 @[simp]
 lemma powL_zero (L: Language 𝒜):
