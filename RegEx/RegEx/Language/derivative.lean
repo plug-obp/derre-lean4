@@ -94,12 +94,16 @@ lemma ν_eq_one_iff (L: Language 𝒜):
   constructor
   . intro H
     simp [*] at *
-    sorry
+    have hL (hL: {[]} ⊆ L): [] ∈ L := by apply hL; rfl
+    apply hL
+    rw [← H]
+    rintro wx ⟨ hwx, _ ⟩
+    exact hwx
   . intro H
     simp [*] at *
     ext wx
     constructor
-    . rintro ⟨hwx, wx1 ⟩
+    . rintro ⟨_, wx1 ⟩
       rw [wx1]
       rfl
     . rintro ⟨ _ ⟩

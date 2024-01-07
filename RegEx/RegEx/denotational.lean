@@ -220,3 +220,57 @@ lemma eps_in_both_eps_in_e₁ (e₁ e₂: Regex 𝒜): [] ∈ (ℒ e₁ * ℒ e�
 
 lemma eps_in_both_eps_in_e₂ (e₁ e₂: Regex 𝒜): [] ∈ (ℒ e₁ * ℒ e₂) → [] ∈ ℒ e₂ :=
   λ H ↦ eps_in_concat_eps_in_both e₁ e₂ H |>.2
+
+
+/--!
+  ℒ induces a denotation-based (set-based) equivalence relation, so we can get a quotient type
+-/
+
+def ℒ_equiv (e₁ e₂: Regex 𝒜): Prop := ∀ w: Word 𝒜, w ∈ ℒ e₁ ↔ w ∈ ℒ e₂
+infix:50 " ~ " => ℒ_equiv
+
+lemma ℒ_equiv_refl:
+  ∀ e: Regex 𝒜, e ~ e
+:= by simp [ℒ_equiv]
+lemma ℒ_equiv_symm:
+  ∀ {e₁ e₂: Regex 𝒜}, e₁ ~ e₂ → e₂ ~ e₁
+:= by {
+    simp [ℒ_equiv]
+    intros e₁ e₂ h w
+    specialize h w
+    rw [h]
+}
+lemma ℒ_equiv_trans:
+  ∀ {e₁ e₂ e₃: Regex 𝒜}, e₁ ~ e₂ → e₂ ~ e₃ → e₁ ~ e₃
+:= by {
+    simp [ℒ_equiv]
+    intros e₁ e₂ e₃ h₁₂ h₂₃ w
+    specialize h₁₂ w
+    specialize h₂₃ w
+    rw [h₁₂, h₂₃]
+}
+theorem ℒ_equiv_is_equivalence: Equivalence (@ℒ_equiv 𝒜) := ⟨ℒ_equiv_refl, ℒ_equiv_symm, ℒ_equiv_trans⟩
+
+instance Regex.toℒSetoid: Setoid (Regex 𝒜) := ⟨ℒ_equiv, ℒ_equiv_is_equivalence ⟩
+
+def Regexℒ (α : Type u) : Type u := Quotient (@Regex.toℒSetoid α)
+
+@[simp]
+def rL(e: Regex 𝒜): Regexℒ 𝒜 := Quotient.mk' e
+@[simp ]
+def concat: Regexℒ 𝒜 → Regexℒ 𝒜 → Regexℒ 𝒜 :=
+  Quotient.lift₂
+    (λ e₁ e₂ => rL (e₁ ⋅ e₂))
+    (λ e₁ e₂ e₃ e₄ e₁e₃ e₂e₄ =>
+      by {
+        apply Quotient.sound
+        intro w
+        dsimp
+        have he₁e₃: ℒ e₁ = ℒ e₃ := by ext ww; exact e₁e₃ ww
+        have he₂e₄: ℒ e₂ = ℒ e₄ := by ext ww; exact e₂e₄ ww
+        rw [he₁e₃, he₂e₄]
+      })
+
+lemma δ_concatenation_eq_eps(e₁ e₂: Regexℒ 𝒜) : concat (e₁) (e₂) = (rL ε) ↔ e₁ = rL ε ∧ e₂ = rL ε := by {
+  sorry
+}
