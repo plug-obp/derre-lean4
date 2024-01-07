@@ -337,7 +337,12 @@ theorem νB_correct(e: Regex 𝒜): νB e = true ↔ [] ∈ ℒ e := by {
 # Membership is nullable derivative
 -/
 def D_chain(w: Word 𝒜) (r: Regex 𝒜): Regex 𝒜 := w.foldl (λ r c => 𝒟 c r) r
-def brzozowski_mem(w: Word 𝒜) (r: Regex 𝒜): Prop := νB (D_chain w r) = true
+def brzozowski_mem(w: Word 𝒜) (r: Regex 𝒜): Prop := νB (D_chain w r)
+
+def brzozowski_mem' : List 𝒜 → Regex 𝒜 → Bool
+  | [], R => νB R
+  | h :: t, R => brzozowski_mem' t (𝒟 h R)
+
 instance brzozowski_membership: Membership (Word 𝒜) (Regex 𝒜) := ⟨brzozowski_mem⟩
 
 instance mem.decidable : ∀ (w : Word 𝒜) (R : Regex 𝒜), Decidable (w ∈ R)
@@ -386,7 +391,7 @@ example (w: Word 𝒜) (r: Regex 𝒜): w ∈ r ↔ νB (D_chain w r) := by {
 }
 
 example: [2, 3] ∈ ((τ 2 ⋅ τ 3): Regex ℕ) := rfl
--- #eval ([2, 3] ∈ ((τ 2 ⋅ τ 3): Regex ℕ))
+
 
 lemma ε_in_e_then_δ_eq_ε(e: Regex 𝒜): [] ∈ ℒ e → ℒ (δ e) = 1 := by {
   intro H
@@ -417,3 +422,36 @@ lemma mem_eq_delta_der(w: Word 𝒜): w ∈ ℒ r → νB (D_chain w r) := by {
     intro H
     sorry
 }
+
+@[simp]
+theorem mem_regex_iff_mem_language_regex (R : Regex 𝒜):
+  ∀ w : Word 𝒜, w ∈ R ↔ w ∈ ℒ R
+:= by {
+  intro wx
+  induction R generalizing wx
+  case empty => {
+    simp [ℒ]
+    sorry
+  }
+  case token => {
+    simp [ℒ]
+    sorry
+  }
+  case concatenation => {
+    simp [ℒ]
+    sorry
+  }
+  case union => {
+    simp [ℒ]
+    sorry
+  }
+  case star => {
+    simp [ℒ]
+    sorry
+  }
+}
+
+instance (r: Regex 𝒜): DecidablePred (· ∈ ℒ r) := fun _ ↦
+  decidable_of_iff _ (mem_regex_iff_mem_language_regex _ _)
+
+-- #eval ([2, 3] ∈ ((τ 2 ⋅ τ 3): Regex ℕ))
