@@ -83,10 +83,6 @@ lemma ν_def (L: Language 𝒜):
   ν L = { x | x ∈ L ∧ x = [] }
 := rfl
 
-lemma ν_eq_empty_iff (L: Language 𝒜):
-  ν L = ∅ ↔ [] ∉ L
-:= sorry
-
 lemma ν_eq_one_iff (L: Language 𝒜):
   ν L = 1 ↔ [] ∈ L
 := by {

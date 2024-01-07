@@ -162,6 +162,18 @@ lemma union_assoc: ∀ r₁ r₂ r₃: Regex 𝒜, ℒ ((r₁ ⋃ r₂) ⋃ r₃
   apply add_assoc
 }
 
+lemma eps_mem_union_iff (e₁ e₂: Regex 𝒜): [] ∈ (ℒ e₁ + ℒ e₂) ↔ ([] ∈ ℒ e₁ ∨ [] ∈ ℒ e₂) := by {
+  apply Iff.intro
+  . intro H
+    cases H with
+    | inl Hl => apply Or.inl; exact Hl
+    | inr Hr => apply Or.inr; exact Hr
+  . intro H
+    cases H with
+    | inl Hl => apply Or.inl; exact Hl
+    | inr Hr => apply Or.inr; exact Hr
+}
+
 @[simp]
 lemma union_empty: ∀ r: Regex 𝒜, ℒ (r ⋃ Φ) = ℒ r := by {
   intro r
@@ -221,6 +233,18 @@ lemma eps_in_both_eps_in_e₁ (e₁ e₂: Regex 𝒜): [] ∈ (ℒ e₁ * ℒ e�
 lemma eps_in_both_eps_in_e₂ (e₁ e₂: Regex 𝒜): [] ∈ (ℒ e₁ * ℒ e₂) → [] ∈ ℒ e₂ :=
   λ H ↦ eps_in_concat_eps_in_both e₁ e₂ H |>.2
 
+lemma eps_in_each_eps_in_concat' (e₁ e₂: Regex 𝒜): [] ∈ ℒ e₁ ∧ [] ∈ ℒ e₂ → [] ∈ ℒ (e₁ ⋅ e₂) := by {
+  rintro ⟨ h₁, h₂⟩
+  simp [ℒ]
+  exists []
+  exists []
+}
+
+lemma eps_mem_concat_iff (e₁ e₂: Regex 𝒜): [] ∈ (ℒ e₁ * ℒ e₂) ↔ ([] ∈ ℒ e₁ ∧ [] ∈ ℒ e₂) := by {
+  apply Iff.intro
+  . apply eps_in_concat_eps_in_both
+  . apply eps_in_each_eps_in_concat'
+}
 
 /--!
   ℒ induces a denotation-based (set-based) equivalence relation, so we can get a quotient type

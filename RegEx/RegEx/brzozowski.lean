@@ -299,13 +299,85 @@ theorem LD_eq_DL (c: 𝒜) (r: Regex 𝒜):
 }
 
 /--!
+# Boolean nullability
+
+- `δ` is nice however it produces regexes which are complex: ε ⋅ ε, ε ⋃ ε,
+  which is fine denotationally, but they are not structurally equal to ε.
+
+- νB is a boolean version of ν, maps a regex to true if the empty word is in the language of the regex.
+  This allows us to define the membership function w ∈ R, without quotient types on the regexes (equality modulo an equivance relation).
+  Of course this approch is not at all economical, but it is a first step towards the Brzozowski derivative.
+-/
+@[simp]
+def νB: Regex 𝒜 → Bool
+| Φ => false
+| τ _ => false
+| e₁ ⋅ e₂ => νB e₁ && νB e₂
+| e₁ ⋃ e₂ => νB e₁ || νB e₂
+| _★ => true
+
+theorem νB_correct(e: Regex 𝒜): νB e = true ↔ [] ∈ ℒ e := by {
+  induction e with
+  | empty | token t =>
+    simp [ℒ, νB]
+    intro H
+    contradiction
+  | concatenation e₁ e₂ ihe₁ ihe₂ =>
+    simp [ℒ, νB]
+    rw [ihe₁, ihe₂]
+    exact Iff.symm (eps_mem_concat_iff _ _)
+  | union e₁ e₂ ihe₁ ihe₂ =>
+    simp [ℒ, νB]
+    rw [ihe₁, ihe₂, add_def]
+    exact Iff.symm (eps_mem_union_iff _ _)
+  | star e _ =>
+    simp [ℒ, νB, eps_mem_kstar]
+}
+/--!
 # Membership is nullable derivative
 -/
 def D_chain(w: Word 𝒜) (r: Regex 𝒜): Regex 𝒜 := w.foldl (λ r c => 𝒟 c r) r
-def brzozowski_mem(w: Word 𝒜) (r: Regex 𝒜): Prop := δ (D_chain w r) = ε       -- this is nice, but it does not work, because of structural equality
+def brzozowski_mem(w: Word 𝒜) (r: Regex 𝒜): Prop := νB (D_chain w r) = true
 instance brzozowski_membership: Membership (Word 𝒜) (Regex 𝒜) := ⟨brzozowski_mem⟩
 
-example (w: Word 𝒜) (r: Regex 𝒜): w ∈ r ↔ δ (D_chain w r) = ε := by {
+instance mem.decidable : ∀ (w : Word 𝒜) (R : Regex 𝒜), Decidable (w ∈ R)
+  | w, Φ => isFalse $ by {
+    simp [Membership.mem, brzozowski_mem, D_chain];
+    induction w with
+    | nil => simp [D]
+    | cons c w ih => simp [D]; exact ih
+  }
+  | w, τ t => by {
+    induction w with
+    | nil => exact Decidable.isFalse $ by simp [Membership.mem, brzozowski_mem, D_token]
+    | cons c w ih =>
+      simp [Membership.mem, brzozowski_mem, D_chain, D_token]
+      by_cases h: c = t
+      . simp [*] at *
+        exact Decidable.isTrue $ by {
+          rw [←h] at ih
+          sorry
+        }
+      . simp [*] at *
+        exact isFalse $ by {
+          simp [*] at *
+          sorry
+        }
+  }
+  | w, e₁ ⋅ e₂ => by {
+    simp [Membership.mem, brzozowski_mem, D_chain, D_concatenation]
+    sorry
+  }
+  | w, e₁ ⋃ e₂ => by {
+    simp [Membership.mem, brzozowski_mem, D_chain, D_union]
+    sorry
+  }
+  | w, e★ => by {
+    simp [Membership.mem, brzozowski_mem, D_chain, D_star]
+    sorry
+  }
+
+example (w: Word 𝒜) (r: Regex 𝒜): w ∈ r ↔ νB (D_chain w r) := by {
   constructor
   . intro H
     exact H
@@ -313,10 +385,8 @@ example (w: Word 𝒜) (r: Regex 𝒜): w ∈ r ↔ δ (D_chain w r) = ε := by 
     exact H
 }
 
-example (w: Word ℕ) (r: Regex 𝒜): w ∈ ((τ 5 ⋅ ε): Regex ℕ) := by {
-  simp [Membership.mem]
-  sorry
-}
+example: [2, 3] ∈ ((τ 2 ⋅ τ 3): Regex ℕ) := rfl
+-- #eval ([2, 3] ∈ ((τ 2 ⋅ τ 3): Regex ℕ))
 
 lemma ε_in_e_then_δ_eq_ε(e: Regex 𝒜): [] ∈ ℒ e → ℒ (δ e) = 1 := by {
   intro H
@@ -324,7 +394,7 @@ lemma ε_in_e_then_δ_eq_ε(e: Regex 𝒜): [] ∈ ℒ e → ℒ (δ e) = 1 := b
   rwa [ν_eq_one_iff]
 }
 
-lemma mem_eq_delta_der(w: Word 𝒜): w ∈ ℒ r → ℒ (δ (D_chain w r)) = 1 := by {
+lemma mem_eq_delta_der(w: Word 𝒜): w ∈ ℒ r → νB (D_chain w r) := by {
   induction r with
   | empty =>
     simp [ℒ, D_chain, δ]
@@ -335,16 +405,15 @@ lemma mem_eq_delta_der(w: Word 𝒜): w ∈ ℒ r → ℒ (δ (D_chain w r)) = 1
     intro H
     rw [H]
     simp [*] at *
-    rw [δ_eq_ν, ν_eq_one_iff, star_denotes]
-    apply one_in_kstar
-    rfl
   | concatenation e₁ e₂ ih₁ ih₂ =>
-    simp [ℒ, D_chain, δ]
+    simp [ℒ, D_chain] at *
     intro H
     sorry
   | union e₁ e₂ ih₁ ih₂ =>
     simp [ℒ, union_denotes]
     sorry
   | star e ih =>
+    simp [ℒ, D_chain, D_star] at *
+    intro H
     sorry
 }
