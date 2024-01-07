@@ -60,7 +60,7 @@ lemma empty_denotes: ℒ (Φ: Regex 𝒜) = ∅ := rfl
 lemma token_denotes: ∀ c: 𝒜, ℒ (τ c) = {[c]} := λ _ => rfl
 
 @[simp]
-lemma union_denotes: ∀ e₁ e₂: Regex 𝒜, ℒ (e₁ ⋃ e₂) = ℒ e₁ ∪ ℒ e₂ := λ _ _ => rfl
+lemma union_denotes: ∀ e₁ e₂: Regex 𝒜, ℒ (e₁ ⋃ e₂) = ℒ e₁ + ℒ e₂ := λ _ _ => rfl
 
 @[simp]
 lemma concatenation_denotes: ∀ e₁ e₂: Regex 𝒜, ℒ (e₁ ⋅ e₂) = ℒ e₁ * ℒ e₂ := λ _ _ => rfl

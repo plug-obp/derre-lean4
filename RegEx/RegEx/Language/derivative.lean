@@ -83,6 +83,31 @@ lemma ν_def (L: Language 𝒜):
   ν L = { x | x ∈ L ∧ x = [] }
 := rfl
 
+lemma ν_eq_empty_iff (L: Language 𝒜):
+  ν L = ∅ ↔ [] ∉ L
+:= sorry
+
+lemma ν_eq_one_iff (L: Language 𝒜):
+  ν L = 1 ↔ [] ∈ L
+:= by {
+  simp [ν_def, one_def]
+  constructor
+  . intro H
+    simp [*] at *
+    sorry
+  . intro H
+    simp [*] at *
+    ext wx
+    constructor
+    . rintro ⟨hwx, wx1 ⟩
+      rw [wx1]
+      rfl
+    . rintro ⟨ _ ⟩
+      constructor
+      . exact H
+      . rfl
+}
+
 lemma ν_empty:
   ν (∅: Language 𝒜) = ∅
 := by {
