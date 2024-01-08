@@ -547,10 +547,42 @@ lemma L_one_mul(L: Language 𝒜):
 := by simp [one_mul]
 
 @[simp]
+lemma eps_mem_add_iff: ∀ L₁ L₂: Language 𝒜, ([] ∈ L₁ + L₂) ↔ ([] ∈ L₁ ∨ [] ∈ L₂) := by {
+  intros L₁ L₂
+  constructor
+  . intro H
+    rcases H with hL₁ | hL₂
+    . apply Or.inl
+      exact hL₁
+    . apply Or.inr
+      exact hL₂
+  . rintro (hL₁ | hL₂)
+    . exact Set.mem_union_left L₂ hL₁
+    . exact Set.mem_union_right L₁ hL₂
+}
+
+@[simp]
 lemma one_mul_one: ∀ L₁ L₂: Language 𝒜, (L₁ * L₂ = 1) → (L₁ = 1 ↔ L₂ = 1) := by {
   intros L₁ L₂ H
   apply eq_one_iff_eq_one_of_mul_eq_one
   exact H
+}
+
+@[simp]
+lemma eps_mem_mul_iff: ∀ L₁ L₂: Language 𝒜, ([] ∈ L₁ * L₂) ↔ ([] ∈ L₁ ∧ [] ∈ L₂) := by {
+  intros L₁ L₂
+  constructor
+  . intro H
+    rcases H with ⟨w₁, w₂, hw₁, hw₂, hw⟩
+    simp [*] at *
+    rw [List.append_eq_nil] at hw
+    rw [hw.1] at hw₁
+    rw [hw.2] at hw₂
+    tauto
+  . rintro ⟨ H₁, H₂ ⟩
+    rw [mul_def, Set.image2]
+    exists []
+    exists []
 }
 
 lemma eps_pow_n:
@@ -596,6 +628,7 @@ lemma empty_singleton (hne: c ≠ d):
     contradiction
 }
 
+@[simp]
 lemma eps_not_in_empty:
   [] ∉ (∅: Language 𝒜)
 := id

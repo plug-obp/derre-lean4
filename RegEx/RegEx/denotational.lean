@@ -213,8 +213,7 @@ lemma star_star: ∀ e: Regex 𝒜, ℒ (e★★) = ℒ (e★) := by {
 lemma eps_in_each_eps_in_concat (e₁ e₂: Regex 𝒜): [] ∈ ℒ e₁ → [] ∈ ℒ e₂ → [] ∈ ℒ (e₁ ⋅ e₂) := by {
   intros h₁ h₂
   simp [ℒ]
-  exists []
-  exists []
+  tauto
 }
 
 lemma eps_in_concat_eps_in_both (e₁ e₂: Regex 𝒜): [] ∈ (ℒ e₁ * ℒ e₂) → ([] ∈ ℒ e₁ ∧ [] ∈ ℒ e₂) := by {
@@ -236,8 +235,7 @@ lemma eps_in_both_eps_in_e₂ (e₁ e₂: Regex 𝒜): [] ∈ (ℒ e₁ * ℒ e�
 lemma eps_in_each_eps_in_concat' (e₁ e₂: Regex 𝒜): [] ∈ ℒ e₁ ∧ [] ∈ ℒ e₂ → [] ∈ ℒ (e₁ ⋅ e₂) := by {
   rintro ⟨ h₁, h₂⟩
   simp [ℒ]
-  exists []
-  exists []
+  tauto
 }
 
 lemma eps_mem_concat_iff (e₁ e₂: Regex 𝒜): [] ∈ (ℒ e₁ * ℒ e₂) ↔ ([] ∈ ℒ e₁ ∧ [] ∈ ℒ e₂) := by {

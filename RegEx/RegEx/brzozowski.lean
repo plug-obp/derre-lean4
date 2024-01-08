@@ -78,21 +78,11 @@ lemma δ₁: ∀ w: Word 𝒜, w ∈ ℒ (δ r) → w = [] := by {
 -/
 lemma δ₂: [] ∈ ℒ (δ r) → [] ∈ (ℒ r) := by {
   induction r with
-  | empty =>
-    simp [ℒ]
-  | token _ =>
-    simp [ℒ]
-    intro h
-    exfalso
-    contradiction
+  | empty | token _ => simp [ℒ]
   | concatenation e₁ e₂ ihe₁ ihe₂ =>
     intro H
     simp [ℒ] at *
-    apply eps_in_each_eps_in_concat
-    . apply ihe₁
-      exact (eps_in_concat_eps_in_both (δ e₁) (δ e₂) H) |>.1
-    . apply ihe₂
-      exact (eps_in_concat_eps_in_both (δ e₁) (δ e₂) H) |>.2
+    tauto
   | union e₁ e₂ ihe₁ ihe₂ =>
     intro H
     simp [ℒ] at *
@@ -142,17 +132,7 @@ lemma δ_holds(r: Regex 𝒜): [] ∈ ℒ r → [] ∈ ℒ (δ r) := by {
   | concatenation e₁ e₂ ihe₁ ihe₂ =>
     intro H
     simp [δ_concatenation] at *
-    exists []
-    exists []
-    constructor
-    . apply ihe₁
-      apply eps_in_both_eps_in_e₁ _ e₂
-      exact H
-    . constructor
-      . apply ihe₂
-        apply eps_in_both_eps_in_e₂ e₁ _
-        exact H
-      . rfl
+    tauto
   | union e₁ e₂ ihe₁ ihe₂ =>
     intro H
     simp [δ, ℒ] at *

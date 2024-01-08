@@ -1,5 +1,6 @@
 import Mathlib.Tactic.Basic --for Type*
 import Mathlib.Data.List.Basic
+import Mathlib.Data.Set.Basic
 import «RegEx».Language.language
 import «RegEx».Language.derivative
 import «RegEx».denotational
@@ -27,18 +28,13 @@ def νB: Regex 𝒜 → Bool
 
 theorem νB_correct(e: Regex 𝒜): νB e = true ↔ [] ∈ ℒ e := by {
   induction e with
-  | empty | token t =>
-    simp [ℒ, νB]
-    intro H
-    contradiction
+  | empty | token t => tauto
   | concatenation e₁ e₂ ihe₁ ihe₂ =>
     simp [ℒ, νB]
     rw [ihe₁, ihe₂]
-    exact Iff.symm (eps_mem_concat_iff _ _)
   | union e₁ e₂ ihe₁ ihe₂ =>
     simp [ℒ, νB]
-    rw [ihe₁, ihe₂, add_def]
-    exact Iff.symm (eps_mem_union_iff _ _)
+    rw [ihe₁, ihe₂]
   | star e _ =>
     simp [ℒ, νB, eps_mem_kstar]
 }
@@ -78,14 +74,63 @@ lemma brzozowski_mem_empty(w: Word 𝒜):
 lemma brzozowski_mem'_delta_iff(w: Word 𝒜)(R: Regex 𝒜):
   brzozowski_mem' w₁ (δ R) = true ↔ w₁ = [] ∧ [] ∈ ℒ R
 := by {
-  sorry
+  induction w₁ generalizing R
+  case nil =>
+    simp [brzozowski_mem']
+    induction R with
+    | empty | token c => tauto
+    | concatenation e₁ e₂ ih₁ ih₂ =>
+      simp [δ_concatenation]
+      rw [ih₁, ih₂]
+    | union e₁ e₂ ih₁ ih₂ =>
+      simp [δ_union]
+      rw [ih₁, ih₂]
+    | star e ih =>
+      simp [δ_star]
+      apply eps_mem_kstar
+  case cons h t ih => sorry
 }
+
 lemma brzozowski_mem'_empty(w: Word 𝒜): brzozowski_mem' w (Φ: Regex 𝒜) = false := by {
   induction w with
   | nil => simp [brzozowski_mem'] at *
   | cons c w ih =>
     simp [ brzozowski_mem', νB] at *
     exact ih
+}
+
+lemma brzozowski_mem'_union_iff(R₁ R₂ : Regex 𝒜) (w : Word 𝒜):
+  brzozowski_mem' w (R₁ ⋃ R₂) ↔ brzozowski_mem' w R₁ ∨ brzozowski_mem' w R₂
+:= by {
+  induction' w with a x ih generalizing R₁ R₂
+  case nil =>
+    simp [brzozowski_mem'_empty, brzozowski_mem', D_union]
+  . simp [brzozowski_mem', D_union]
+    rw [ih]
+}
+
+lemma brzozowski_not_mem'_union_iff(R₁ R₂ : Regex 𝒜) (w : Word 𝒜):
+  brzozowski_mem' w (R₁ ⋃ R₂)=false ↔ brzozowski_mem' w R₁=false ∧ brzozowski_mem' w R₂=false
+:= by {
+  induction w generalizing R₁ R₂
+  case nil =>
+    simp [brzozowski_mem']
+  case cons c w ih =>
+    simp [brzozowski_mem']
+    apply ih
+}
+
+lemma brzozowski_not_mem'_empty_concat (w : Word 𝒜):
+  brzozowski_mem' w (Φ ⋅ R) = false
+:= by {
+  induction w generalizing R
+  case nil => simp [brzozowski_mem']
+  case cons c w ih =>
+    simp [brzozowski_mem', δ]
+    rw [brzozowski_not_mem'_union_iff]
+    constructor
+    . exact ih
+    . exact ih
 }
 
 lemma brzozowski_mem'_char_iff(w: Word 𝒜):
@@ -102,23 +147,45 @@ lemma brzozowski_mem'_char_iff(w: Word 𝒜):
     split_ifs
     . rw [List.cons.injEq]
       simp [D_eps, brzozowski_mem'_empty]
-      sorry
+      apply brzozowski_not_mem'_empty_concat
     . rw [List.cons.injEq]
       simp [D_empty, brzozowski_mem'_empty, and_false]
 }
 
-lemma brzozowski_mem'_union_iff(R₁ R₂ : Regex 𝒜) (w : Word 𝒜):
-  brzozowski_mem' w (R₁ ⋃ R₂) ↔ brzozowski_mem' w R₁ ∨ brzozowski_mem' w R₂
-:= by {
-  induction' w with a x ih generalizing R₁ R₂
-  case nil =>
-    simp [brzozowski_mem'_empty, brzozowski_mem', D_union]
-  . simp [brzozowski_mem', D_union]
-    rw [ih]
+lemma brzozowski_mem'_eps(w: Word 𝒜): brzozowski_mem' w (ε: Regex 𝒜) ↔ w = [] := by {
+  induction w with
+  | nil => simp [brzozowski_mem'] at *
+  | cons c w =>
+    simp [ brzozowski_mem', νB] at *
+    apply brzozowski_not_mem'_empty_concat
 }
 
+lemma brzozowski_mem'_star_iff(w: Word 𝒜) (R: Regex 𝒜):
+  brzozowski_mem' w (R★) ↔ ∃ a w₁, a::w₁ = w ∧ (brzozowski_mem' [a] R) ∧ (brzozowski_mem' w₁ (R★))
+:= by {
+  simp [brzozowski_mem']
+
+  induction R with
+  | empty =>
+    sorry
+
+  | token ch => sorry
+  | concatenation e₁ e₂ ih₁ ih₂ => sorry
+  | union e₁ e₂ ih₁ ih₂ => sorry
+  | star e ih => sorry
+}
+
+lemma arrange:
+     ((a ∧ (x₁ ∨ x₂) ∧ b)
+  ∨   (a ∧ (y₁ ∨ y₂) ∧ d)) ↔
+     ((a ∧ x₁ ∧ b) ∨ (a ∧ y₁ ∧ d)
+  ∨   (a ∧ x₂ ∧ b) ∨ (a ∧ y₂ ∧ d))
+:= by tauto
+
+
 lemma brzozowski_mem'_concat_iff(R₁ R₂ : Regex 𝒜) (w : Word 𝒜) :
-    brzozowski_mem' w (R₁ ⋅ R₂) ↔ ∃ w₁ w₂, w₁ ++ w₂ = w ∧ brzozowski_mem' w₁ R₁ ∧ brzozowski_mem' w₂ R₂ := by
+  brzozowski_mem' w (R₁ ⋅ R₂) ↔ ∃ w₁ w₂, w₁ ++ w₂ = w ∧ brzozowski_mem' w₁ R₁ ∧ brzozowski_mem' w₂ R₂
+:= by {
   induction' w with a x ih generalizing R₁ R₂
   case nil =>
     simp [brzozowski_mem'_empty, brzozowski_mem', D_concatenation]
@@ -156,22 +223,38 @@ lemma brzozowski_mem'_concat_iff(R₁ R₂ : Regex 𝒜) (w : Word 𝒜) :
     . intro H
       rw [ih, ih]
       rcases H with ⟨w₁, w₂, hw, hm₁, hm₂⟩
-      . left
-        induction R₁ with
-        | empty =>
-          exfalso
-          rw [brzozowski_mem'_empty] at hm₁
-          contradiction
-        | token t =>
-          exists []
-          simp [brzozowski_mem'_char_iff] at hm₁
-          rw [hm₁] at hw
-          injection hw with hw₁ hw₂
-          simp [*] at *
-          exists w₂
-        | concatenation e₁ e₂ ih₁ ih₂ => sorry
-        | union e₁ e₂ ih₁ ih₂ => sorry
-        | star e ih => sorry
+      induction R₁ with
+      | empty =>
+        exfalso
+        rw [brzozowski_mem'_empty] at hm₁
+        contradiction
+      | token t =>
+        left
+        exists []
+        simp [brzozowski_mem'_char_iff] at hm₁
+        rw [hm₁] at hw
+        injection hw with hw₁ hw₂
+        simp [*] at *
+        exists w₂
+      | concatenation e₁ e₂ ih₁ ih₂ => sorry
+      | union e₁ e₂ ih₁ ih₂ =>
+        simp [brzozowski_mem'_union_iff] at hm₁
+        simp [D_union, brzozowski_mem'_union_iff, δ]
+        simp [←exists_or]
+        conv in (_ ∧ _) ∨ (_ ∧ _)  => rw [arrange]
+        simp [exists_or]
+        rw [←or_assoc]
+        rcases hm₁ with hh₁ | hh₂
+        . apply Or.inl
+          apply ih₁
+          exact hh₁
+        . apply Or.inr
+          apply ih₂
+          exact hh₂
+      | star e ih =>
+        sorry
+}
+
 
 
 
@@ -183,16 +266,6 @@ lemma brzozowski_mem_eps_iff(w: Word 𝒜): brzozowski_mem w ε ↔ w = [] := by
     simp [brzozowski_mem, νB] at *
     sorry
 }
-
-lemma brzozowski_mem'_eps(w: Word 𝒜): brzozowski_mem' w ε ↔ w ∈ (ℒ ε) := by {
-  induction w with
-  | nil => simp [brzozowski_mem', νB]
-  | cons c w ih =>
-    simp [brzozowski_mem',  νB] at *
-    sorry
-}
-
-
 
 instance mem.decidable : ∀ (w : Word 𝒜) (R : Regex 𝒜), Decidable (w ∈ R)
   | w, Φ => isFalse $ by {
