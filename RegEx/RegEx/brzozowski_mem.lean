@@ -65,7 +65,9 @@ lemma brzozowski_mem'_correct: ∀ (w: Word 𝒜) (r: Regex 𝒜), brzozowski_me
     rfl
 }
 
-lemma brzozowski_mem_empty(w: Word 𝒜): w ∉ (Φ: Regex 𝒜) := by {
+lemma brzozowski_mem_empty(w: Word 𝒜):
+  w ∉ (Φ: Regex 𝒜)
+:= by {
   induction w with
   | nil => simp [Membership.mem, brzozowski_mem] at *
   | cons _ _ ih =>
@@ -73,6 +75,11 @@ lemma brzozowski_mem_empty(w: Word 𝒜): w ∉ (Φ: Regex 𝒜) := by {
     exact ih
 }
 
+lemma brzozowski_mem'_delta_iff(w: Word 𝒜)(R: Regex 𝒜):
+  brzozowski_mem' w₁ (δ R) = true ↔ w₁ = [] ∧ [] ∈ ℒ R
+:= by {
+  sorry
+}
 lemma brzozowski_mem'_empty(w: Word 𝒜): brzozowski_mem' w (Φ: Regex 𝒜) = false := by {
   induction w with
   | nil => simp [brzozowski_mem'] at *
@@ -81,7 +88,9 @@ lemma brzozowski_mem'_empty(w: Word 𝒜): brzozowski_mem' w (Φ: Regex 𝒜) = 
     exact ih
 }
 
-lemma brzozowski_mem'_char_iff(w: Word 𝒜): brzozowski_mem' w (τ c: Regex 𝒜) ↔ w = [c] := by {
+lemma brzozowski_mem'_char_iff(w: Word 𝒜):
+  brzozowski_mem' w (τ c: Regex 𝒜) ↔ w = [c]
+:= by {
   cases' w with h t
   . simp [brzozowski_mem']
   cases' t with h t
@@ -96,6 +105,16 @@ lemma brzozowski_mem'_char_iff(w: Word 𝒜): brzozowski_mem' w (τ c: Regex �
       sorry
     . rw [List.cons.injEq]
       simp [D_empty, brzozowski_mem'_empty, and_false]
+}
+
+lemma brzozowski_mem'_union_iff(R₁ R₂ : Regex 𝒜) (w : Word 𝒜):
+  brzozowski_mem' w (R₁ ⋃ R₂) ↔ brzozowski_mem' w R₁ ∨ brzozowski_mem' w R₂
+:= by {
+  induction' w with a x ih generalizing R₁ R₂
+  case nil =>
+    simp [brzozowski_mem'_empty, brzozowski_mem', D_union]
+  . simp [brzozowski_mem', D_union]
+    rw [ih]
 }
 
 lemma brzozowski_mem'_concat_iff(R₁ R₂ : Regex 𝒜) (w : Word 𝒜) :
@@ -113,7 +132,47 @@ lemma brzozowski_mem'_concat_iff(R₁ R₂ : Regex 𝒜) (w : Word 𝒜) :
       rw [hw.2] at hm₂
       simp [brzozowski_mem'] at *
       exact And.intro hm₁ hm₂
-  . sorry
+  . simp [brzozowski_mem', D_concatenation, brzozowski_mem'_union_iff]
+    constructor
+    . intro H
+      rw [ih, ih] at H
+      rcases H with ⟨w₁, w₂, hw, hm₁, hm₂⟩ | ⟨w₁, w₂, hw, hm₁, hm₂⟩
+      . exists a::w₁
+        exists w₂
+        rw [brzozowski_mem']
+        exact ⟨by rw [←hw, List.cons_append], hm₁, hm₂⟩
+      . exists []
+        exists (a::w₂)
+        simp [brzozowski_mem']
+        rw [brzozowski_mem'_delta_iff w₁ R₁] at hm₁
+        constructor
+        . rw [hm₁.1] at hw
+          rw [nil_append_word, List.cons_inj] at *
+          exact hw
+        . constructor
+          . rw [νB_correct]
+            exact hm₁.2
+          . exact hm₂
+    . intro H
+      rw [ih, ih]
+      rcases H with ⟨w₁, w₂, hw, hm₁, hm₂⟩
+      . left
+        induction R₁ with
+        | empty =>
+          exfalso
+          rw [brzozowski_mem'_empty] at hm₁
+          contradiction
+        | token t =>
+          exists []
+          simp [brzozowski_mem'_char_iff] at hm₁
+          rw [hm₁] at hw
+          injection hw with hw₁ hw₂
+          simp [*] at *
+          exists w₂
+        | concatenation e₁ e₂ ih₁ ih₂ => sorry
+        | union e₁ e₂ ih₁ ih₂ => sorry
+        | star e ih => sorry
+
 
 
 
