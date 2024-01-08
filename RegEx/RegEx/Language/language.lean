@@ -615,3 +615,23 @@ lemma add_eq_self_iff(L₁ L₂: Language 𝒜):
     apply Set.union_eq_self_of_subset_right
     exact H
 }
+
+/--!
+# Map the alphabet of a language
+-/
+def map (f : α → β) : Language α →+* Language β where
+  toFun := Set.image (List.map f)
+  map_zero' := Set.image_empty _
+  map_one' := Set.image_singleton
+  map_add' := Set.image_union _
+  map_mul' _ _ := Set.image_image2_distrib $ List.map_append _
+
+@[simp]
+theorem map_id (L : Language α):
+  map id L = L
+:= by simp [map]
+
+@[simp]
+theorem map_map (g : β → γ) (f : α → β) (L : Language α):
+  map g (map f L) = map (g ∘ f) L
+:= by simp [map, Set.image_image]
