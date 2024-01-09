@@ -151,6 +151,31 @@ lemma δ_holds(r: Regex 𝒜): [] ∈ ℒ r → [] ∈ ℒ (δ r) := by {
     rfl
 }
 
+lemma ℒδ(r: Regex 𝒜): ℒ (δ r) = { [] } ↔ [] ∈ ℒ r  := by {
+  constructor
+  . intro H
+    have hw : [] ∈ ℒ (δ r) := by {
+      simp [H]
+      rfl
+    }
+    exact δ₂ hw
+  . intro H
+    have hw : [] ∈ ℒ (δ r) := by {
+      exact δ_holds r H
+    }
+    ext wx
+    constructor
+    . intro Hwx
+      have hwx : wx = [] := by {
+        apply δ₁
+        exact Hwx
+      }
+      tauto
+    . intro Hwx
+      rcases Hwx with ⟨ _ ⟩
+      exact hw
+}
+
 theorem ε_in_δ_ε_in_r: [] ∈ ℒ (δ r) ↔ [] ∈ ℒ r := by {
   constructor
   . apply δ₂
@@ -277,4 +302,12 @@ theorem LD_eq_DL (c: 𝒜) (r: Regex 𝒜):
     simp [DerL_star]
     rw [←ihe]
     rfl
+}
+
+lemma empty_mem_derivative(c: 𝒜) (r: Regex 𝒜):
+  [] ∈ ℒ (𝒟 c r) ↔ r = τ c
+:= by {
+  constructor
+  . sorry
+  . sorry
 }
