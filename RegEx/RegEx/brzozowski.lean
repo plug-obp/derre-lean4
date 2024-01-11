@@ -304,10 +304,37 @@ theorem LD_eq_DL (c: 𝒜) (r: Regex 𝒜):
     rfl
 }
 
-lemma empty_mem_derivative(c: 𝒜) (r: Regex 𝒜):
-  [] ∈ ℒ (𝒟 c r) ↔ r = τ c
+lemma D_token_eq_eps_iff(c: 𝒜) (r: Regex 𝒜):
+  𝒟 c r = ε ↔ r = τ c
+:= by {
+  induction r with
+  | empty => simp [D]
+  | token c₁ => simp [D_token]; tauto
+  | concatenation e₁ e₂ ih₁ ih₂ => simp [D_concatenation, ih₁, ih₂]
+  | union e₁ e₂ ih₁ ih₂ => simp [D_union, ih₁, ih₂]
+  | star e _ => simp [D_star]
+}
+
+lemma D_token_neq_eps_iff(c: 𝒜) (r: Regex 𝒜):
+  𝒟 c r ≠ ε ↔ r ≠ τ c
 := by {
   constructor
-  . sorry
-  . sorry
+  . intro H
+    intro heq
+    rw [heq] at H
+    simp [D_token] at H
+  . intro H
+    simp [D]
+    intro heq
+    rw [←ε] at heq
+    rw [D_token_eq_eps_iff] at heq
+    contradiction
+}
+
+lemma delta_idem(e₁: Regex 𝒜): δ (δ e₁) = δ e₁ := by {
+  induction e₁ with
+  | empty | token _ => simp [δ]
+  | concatenation e₁ e₂ ih₁ ih₂ => simp [δ_concatenation, ih₁, ih₂]
+  | union e₁ e₂ ih₁ ih₂ => simp [δ_union, ih₁, ih₂]
+  | star e _ => simp [δ_star]
 }
