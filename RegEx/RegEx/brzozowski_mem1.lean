@@ -7,7 +7,7 @@ import «RegEx».denotational
 import «RegEx».brzozowski
 
 variable [deq𝒜: DecidableEq 𝒜]
-
+namespace regex_mem
 /--!
 # Boolean nullability
 
@@ -403,3 +403,5 @@ noncomputable instance (r: Regex 𝒜): DecidablePred (· ∈ ℒ r) := fun _ �
 
 -- #reduce ([2, 3] ∈ ((τ 2 ⋅ τ 3): Regex ℕ))
 -- #eval ([2, 3] ∈ ((τ 2 ⋅ τ 3): Regex ℕ))
+
+end regex_mem
