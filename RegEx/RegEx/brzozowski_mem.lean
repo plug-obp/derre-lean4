@@ -58,11 +58,13 @@ theorem νB_false(e: Regex 𝒜): νB e = false ↔ [] ∉ ℒ e := by {
 -/
 def D_chain(w: Word 𝒜) (r: Regex 𝒜): Regex 𝒜 := w.foldl (λ r c => 𝒟 c r) r
 def brzozowski_mem(w: Word 𝒜) (r: Regex 𝒜): Prop := νB (D_chain w r)
-instance brzozowski_membership: Membership (Word 𝒜) (Regex 𝒜) := ⟨brzozowski_mem⟩
 
-def brzozowski_mem' : List 𝒜 → Regex 𝒜 → Bool
+
+def brzozowski_mem' : Word 𝒜 → Regex 𝒜 → Bool
   | [], R => νB R
   | h :: t, R => brzozowski_mem' t (𝒟 h R)
+
+instance brzozowski_membership': Membership (Word 𝒜) (Regex 𝒜) := ⟨brzozowski_mem⟩
 
 /--! the fold version is definitionally equal to the recursive version -/
 lemma brzozowski_mem'_correct: ∀ (w: Word 𝒜) (r: Regex 𝒜), brzozowski_mem' w r = brzozowski_mem w r := by {
@@ -176,14 +178,6 @@ lemma brzozowski_mem'_eps(w: Word 𝒜):
   | cons c w =>
     simp [ brzozowski_mem', νB] at *
     apply brzozowski_not_mem'_empty_concat
-}
-
-lemma delta_ne_token(r: Regex 𝒜): δ r ≠ τ c := by {
-  induction r with
-  | empty | token _ => simp [δ]
-  | concatenation e₁ e₂ _ _ => simp [δ_concatenation]
-  | union e₁ e₂ _ _ => simp [δ_union]
-  | star e _ => simp [δ_star]
 }
 
 lemma brzozowski_mem'_d_delta (c: 𝒜)(r₁ r₂: Regex 𝒜):

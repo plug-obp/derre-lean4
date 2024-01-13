@@ -28,7 +28,9 @@ lemma δ_star: ∀ e: Regex 𝒜, δ (e★) = ε := by simp [δ]
 /-
   For any Regex re, the language of (δ re) contains only the empty Word [].
 -/
-lemma δ₁: ∀ w: Word 𝒜, w ∈ ℒ (δ r) → w = [] := by {
+lemma δ₁:
+  ∀ w: Word 𝒜, w ∈ ℒ (δ r) → w = []
+:= by {
   induction r with
   | empty | token _ =>
     simp [δ, ℒ]
@@ -76,7 +78,9 @@ lemma δ₁: ∀ w: Word 𝒜, w ∈ ℒ (δ r) → w = [] := by {
   If the empty word is in the language of δ re, then the empty word is in the language of the re
   `[] ∈ L (δ r) → [] ∈ (L r)`
 -/
-lemma δ₂: [] ∈ ℒ (δ r) → [] ∈ (ℒ r) := by {
+lemma δ₂:
+  [] ∈ ℒ (δ r) → [] ∈ (ℒ r)
+:= by {
   induction r with
   | empty | token _ => simp [ℒ]
   | concatenation e₁ e₂ ihe₁ ihe₂ =>
@@ -104,7 +108,9 @@ lemma δ₂: [] ∈ ℒ (δ r) → [] ∈ (ℒ r) := by {
   The compilation of δ₁ and δ₂.
   The language of δ r is the singleton { [] } and [] is in the languare of r.
 -/
-lemma δε: w ∈ ℒ (δ r) → w = [] ∧ [] ∈ (ℒ r) := by {
+lemma δε:
+  w ∈ ℒ (δ r) → w = [] ∧ [] ∈ (ℒ r)
+:= by {
   intro H
   constructor
   . apply δ₁
@@ -121,7 +127,9 @@ lemma δε: w ∈ ℒ (δ r) → w = [] ∧ [] ∈ (ℒ r) := by {
 /-!
   If the empty word is in the language of r, then the empty word is in the language of δ r
 -/
-lemma δ_holds(r: Regex 𝒜): [] ∈ ℒ r → [] ∈ ℒ (δ r) := by {
+lemma δ_holds(r: Regex 𝒜):
+  [] ∈ ℒ r → [] ∈ ℒ (δ r)
+:= by {
   induction r with
   | empty => simp [ℒ]
   | token c =>
@@ -151,7 +159,9 @@ lemma δ_holds(r: Regex 𝒜): [] ∈ ℒ r → [] ∈ ℒ (δ r) := by {
     rfl
 }
 
-lemma ℒδ(r: Regex 𝒜): ℒ (δ r) = { [] } ↔ [] ∈ ℒ r  := by {
+lemma ℒδ(r: Regex 𝒜):
+  ℒ (δ r) = { [] } ↔ [] ∈ ℒ r
+:= by {
   constructor
   . intro H
     have hw : [] ∈ ℒ (δ r) := by {
@@ -176,10 +186,20 @@ lemma ℒδ(r: Regex 𝒜): ℒ (δ r) = { [] } ↔ [] ∈ ℒ r  := by {
       exact hw
 }
 
-theorem ε_in_δ_ε_in_r: [] ∈ ℒ (δ r) ↔ [] ∈ ℒ r := by {
+theorem ε_in_δ_ε_in_r:
+  [] ∈ ℒ (δ r) ↔ [] ∈ ℒ r
+:= by {
   constructor
   . apply δ₂
   . apply δ_holds
+}
+
+lemma delta_ne_token(r: Regex 𝒜): δ r ≠ τ c := by {
+  induction r with
+  | empty | token _ => simp [δ]
+  | concatenation e₁ e₂ _ _ => simp [δ_concatenation]
+  | union e₁ e₂ _ _ => simp [δ_union]
+  | star e _ => simp [δ_star]
 }
 
 /-
@@ -225,7 +245,9 @@ lemma D_star: ∀ c: 𝒜, ∀ e: Regex 𝒜, 𝒟 c (e★) = (𝒟 c e) ⋅ (e�
 @[simp]
 lemma D_eps: ∀ (c: 𝒜), 𝒟 c ε = (Φ: Regex 𝒜)⋅(Φ★) := λ _ => rfl
 
-theorem LD_imp_DL_token: ∀ (c: 𝒜) (w: Word 𝒜), w ∈ ℒ (𝒟 c (τ t)) → w ∈ 𝒟 c (ℒ (τ t)) := by {
+theorem LD_imp_DL_token:
+  ∀ (c: 𝒜) (w: Word 𝒜), w ∈ ℒ (𝒟 c (τ t)) → w ∈ 𝒟 c (ℒ (τ t))
+:= by {
   intros c w Hw
   simp [DerL_singleton, D_token] at *
   split
@@ -238,7 +260,9 @@ theorem LD_imp_DL_token: ∀ (c: 𝒜) (w: Word 𝒜), w ∈ ℒ (𝒟 c (τ t))
     exact Hw
 }
 
-lemma δ_eq_ν(e: Regex 𝒜):  ℒ (δ e) = ν (ℒ e) := by {
+lemma δ_eq_ν(e: Regex 𝒜):
+  ℒ (δ e) = ν (ℒ e)
+:= by {
   induction e with
   | empty =>
     simp [δ, ℒ, ν]
@@ -336,5 +360,30 @@ lemma delta_idem(e₁: Regex 𝒜): δ (δ e₁) = δ e₁ := by {
   | empty | token _ => simp [δ]
   | concatenation e₁ e₂ ih₁ ih₂ => simp [δ_concatenation, ih₁, ih₂]
   | union e₁ e₂ ih₁ ih₂ => simp [δ_union, ih₁, ih₂]
+  | star e _ => simp [δ_star]
+}
+
+lemma D_delta(c: 𝒜)(r: Regex 𝒜):
+  𝒟 c (δ r) ≠ ε
+:= by {
+  rw [D_token_neq_eps_iff]
+  induction r with
+  | empty => simp [δ]
+  | token _ => simp [δ]
+  | concatenation e₁ e₂ _ _ => simp [δ_concatenation]
+  | union e₁ e₂ _ _ => simp [δ_union]
+  | star e _ => simp [δ_star]
+}
+
+lemma D_delta_language(c: 𝒜)(r: Regex 𝒜):
+  ℒ (𝒟 c (δ r)) = ∅
+:= by {
+  induction r with
+  | empty => simp [δ]
+  | token _ => simp [δ]
+  | concatenation e₁ e₂ ih₁ ih₂ =>
+    simp [δ_concatenation, ih₁, ih₂, add_involution]
+  | union e₁ e₂ ih₁ ih₂ =>
+    simp [δ_union, ih₁, ih₂, add_involution]
   | star e _ => simp [δ_star]
 }
