@@ -43,7 +43,9 @@ def ℒ: Regex 𝒜 → Language 𝒜
 
 
 -- ε represents the language consisting only of the empty word.
-lemma mem_l_eps (w: Word 𝒜): w ∈ ℒ ε ↔ w = [] := by simp [ℒ]
+lemma mem_l_eps (w: Word 𝒜):
+  w ∈ ℒ ε ↔ w = []
+:= by simp [ℒ]
 
 lemma eps_denotes: @ℒ 𝒜 ε = 1 := by simp [ℒ]
 
